@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mô Hình Cổng Trường An Toàn | Dự Án STEM</title>
+    <title>Cổng Trường An Toàn — Hồ Sơ Thiết Kế & Mô Phỏng Mô Hình STEM</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Be Vietnam Pro & IBM Plex Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['"Be Vietnam Pro"', 'sans-serif'],
+                        mono: ['"IBM Plex Mono"', 'monospace'],
                     },
                     colors: {
-                        brand: {
-                            navy: '#0f172a',
-                            blue: '#1e3a8a',
-                            emerald: '#059669',
-                            amber: '#d97706',
-                            light: '#f8fafc'
-                        }
+                        paper: '#F4F1EA',
+                        paperLight: '#FAF8F5',
+                        paperDark: '#E6E1D6',
+                        ink: '#161616',
+                        sigOrange: '#D9381E',
+                        sigGreen: '#1B7A43',
+                        sigYellow: '#D97706',
+                        blueprint: '#1D4ED8'
                     }
                 }
             }
@@ -34,661 +36,1463 @@
 
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
+            background-color: #F4F1EA;
+            color: #161616;
+            background-image: radial-gradient(#161616 0.55px, transparent 0.55px);
+            background-size: 24px 24px;
         }
 
-        /* Tự động ẩn khung hướng dẫn khi thẻ img đã được bạn chèn link vào src="" */
-        .image-slot-container img[src=""],
-        .image-slot-container img:not([src]) {
-            display: none;
+        /* Hệ thống đường kẻ bản vẽ kỹ thuật sắc nét (Swiss Ledger Grid) */
+        .box-ink { border: 1.5px solid #161616; }
+        .bt-ink { border-top: 1.5px solid #161616; }
+        .bb-ink { border-bottom: 1.5px solid #161616; }
+        .bl-ink { border-left: 1.5px solid #161616; }
+        .br-ink { border-right: 1.5px solid #161616; }
+
+        /* Họa tiết sọc cảnh báo an toàn giao thông */
+        .hazard-stripe {
+            background: repeating-linear-gradient(
+                -45deg,
+                #161616,
+                #161616 12px,
+                #EAB308 12px,
+                #EAB308 24px
+            );
         }
 
-        .image-slot-container img:not([src=""]) {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* Nền lưới kỹ thuật cho Sa bàn 2D */
+        .blueprint-grid-bg {
+            background-color: #FAF8F5;
+            background-image:
+                linear-gradient(to right, rgba(22, 22, 22, 0.06) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(22, 22, 22, 0.06) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        .image-slot-container img:not([src=""]) + .placeholder-guide {
-            display: none;
+        /* Hiệu ứng đèn giao thông */
+        .lamp {
+            transition: all 0.25s ease;
+            opacity: 0.25;
+        }
+        .lamp.active-red {
+            opacity: 1;
+            background-color: #D9381E;
+            box-shadow: 0 0 0 3px #FAF8F5, 0 0 14px #D9381E;
+        }
+        .lamp.active-yellow {
+            opacity: 1;
+            background-color: #EAB308;
+            box-shadow: 0 0 0 3px #FAF8F5, 0 0 14px #EAB308;
+        }
+        .lamp.active-green {
+            opacity: 1;
+            background-color: #1B7A43;
+            box-shadow: 0 0 0 3px #FAF8F5, 0 0 14px #1B7A43;
         }
 
-        /* Hiệu ứng đèn giao thông mini trên trang */
-        @keyframes pulseTraffic {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.45; }
+        /* Hiệu ứng chuyển động trên Sa bàn SVG */
+        @keyframes dashFlow {
+            to {
+                stroke-dashoffset: -40;
+            }
         }
-        .traffic-glow {
-            animation: pulseTraffic 2.5s infinite ease-in-out;
+        .animate-flow-fast {
+            animation: dashFlow 1.1s linear infinite;
+        }
+        .animate-flow-slow {
+            animation: dashFlow 2.6s linear infinite;
+        }
+
+        @keyframes hazardPulse {
+            0%, 100% { transform: scale(1); opacity: 0.95; }
+            50% { transform: scale(1.12); opacity: 0.55; }
+        }
+        .conflict-pulse {
+            transform-origin: center;
+            transform-box: fill-box;
+            animation: hazardPulse 1.4s ease-in-out infinite;
+        }
+
+        /* Vùng chọn trên Sa bàn SVG */
+        .svg-zone {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .svg-zone:hover {
+            filter: brightness(0.95);
+        }
+        .svg-zone.selected-zone {
+            stroke: #1D4ED8 !important;
+            stroke-width: 3.5px !important;
         }
     </style>
 </head>
-<body class="antialiased selection:bg-emerald-600 selection:text-white">
+<body class="antialiased selection:bg-ink selection:text-paper py-3 px-2 sm:px-6 lg:px-10">
 
-    <!-- ==================== THANH ĐIỀU HƯỚNG (HEADER) ==================== -->
-    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- Logo & Tên dự án -->
-            <a href="#" class="flex items-center gap-3 group">
-                <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-sm group-hover:bg-emerald-600 transition-colors">
-                    <!-- Icon Đèn giao thông -->
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <rect x="7" y="2" width="10" height="20" rx="3" stroke-width="2"/>
-                        <circle cx="12" cy="7" r="1.5" fill="#ef4444"/>
-                        <circle cx="12" cy="12" r="1.5" fill="#f59e0b"/>
-                        <circle cx="12" cy="17" r="1.5" fill="#10b981"/>
-                    </svg>
-                </div>
-                <div>
-                    <span class="text-xs font-bold tracking-wider uppercase text-emerald-600 block">Dự án STEM</span>
-                    <span class="text-base font-bold text-slate-900">Cổng Trường An Toàn</span>
-                </div>
-            </a>
+    <!-- KHUNG VIỀN CHÍNH CỦA BẢN THUYẾT MINH KỸ THUẬT -->
+    <div class="max-w-7xl mx-auto bg-paper box-ink shadow-[8px_8px_0px_#161616]">
 
-            <!-- Menu điều hướng -->
-            <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-                <a href="#gioi-thieu" class="hover:text-slate-900 transition-colors">Thử thách & Giải pháp</a>
-                <a href="#hinh-anh-san-pham" class="hover:text-emerald-600 text-emerald-700 font-semibold transition-colors">Hình ảnh sản phẩm</a>
-                <a href="#quy-trinh-6-buoc" class="hover:text-slate-900 transition-colors">6 Bước thực hiện</a>
-                <a href="#vat-lieu" class="hover:text-slate-900 transition-colors">Vật liệu</a>
-                <a href="#ma-qr" class="px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors">Mã QR Quy Tắc</a>
-            </nav>
-
-            <!-- Nút chuyển nhanh đến phần Hình ảnh trên Mobile -->
-            <a href="#hinh-anh-san-pham" class="md:hidden px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold">
-                Xem Hình Ảnh
-            </a>
-        </div>
-    </header>
-
-    <!-- ==================== PHẦN MỞ ĐẦU (HERO SECTION) ==================== -->
-    <section class="relative overflow-hidden bg-white border-b border-slate-200 py-12 sm:py-20">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <!-- ==================== HEADER: THANH THÔNG TIN DỰ ÁN & TÍN HIỆU (TOP BAR) ==================== -->
+        <header class="bb-ink bg-paper sticky top-0 z-40">
+            <div class="grid grid-cols-1 lg:grid-cols-12">
                 
-                <!-- Cột thông tin chính -->
-                <div class="lg:col-span-7 space-y-6">
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold tracking-wide uppercase">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        STEM – Hành động vì cộng đồng
+                <!-- Ô 1: Chương trình -->
+                <div class="lg:col-span-4 p-3 sm:p-4 bb-ink lg:border-b-0 lg:br-ink flex flex-col justify-between">
+                    <span class="font-mono text-[10px] uppercase tracking-widest text-ink/60">CHƯƠNG TRÌNH HÀNH ĐỘNG</span>
+                    <span class="font-bold text-sm sm:text-base tracking-tight uppercase mt-0.5 text-ink">
+                        STEM – HÀNH ĐỘNG VÌ CỘNG ĐỒNG
+                    </span>
+                </div>
+
+                <!-- Ô 2: Tên dự án -->
+                <div class="lg:col-span-4 p-3 sm:p-4 bb-ink lg:border-b-0 lg:br-ink flex flex-col justify-between bg-paperDark/30">
+                    <span class="font-mono text-[10px] uppercase tracking-widest text-sigOrange font-bold">TÊN DỰ ÁN SẢN PHẨM</span>
+                    <span class="font-bold text-sm sm:text-base text-ink mt-0.5 uppercase tracking-tight">
+                        MÔ HÌNH "CỔNG TRƯỜNG AN TOÀN" <span class="font-mono text-xs text-ink/70">(THCS)</span>
+                    </span>
+                </div>
+
+                <!-- Ô 3: Cụm đèn tín hiệu tương tác thực tế (Đồng bộ với Sa bàn 2D) -->
+                <div class="lg:col-span-4 p-3 sm:p-4 bg-paperDark/70 flex items-center justify-between gap-3">
+                    <div>
+                        <span class="font-mono text-[10px] uppercase tracking-widest text-ink/60 block">ĐÈN TÍN HIỆU MÔ HÌNH (ĐỒNG BỘ SA BÀN)</span>
+                        <span id="traffic-status-text" class="font-mono text-xs font-bold uppercase text-sigRed text-sigOrange mt-0.5 block">
+                            [ĐÈN ĐỎ] — XE DỪNG, HỌC SINH QUA ĐƯỜNG
+                        </span>
                     </div>
 
-                    <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                        Mô Hình <span class="text-emerald-600">Cổng Trường An Toàn</span>
-                    </h1>
-
-                    <p class="text-lg sm:text-xl text-slate-600 font-medium leading-relaxed">
-                        “Thiết kế hôm nay – Một môi trường an toàn hơn ngày mai!”
-                    </p>
-
-                    <p class="text-slate-600 leading-relaxed">
-                        Sản phẩm mô hình trực quan giúp giải quyết bài toán ùn tắc và mất trật tự tại khu vực cổng trường THCS vào giờ cao điểm, kết hợp giải pháp quy hoạch không gian thông minh, vật liệu thân thiện môi trường và công nghệ mã QR tương tác.
-                    </p>
-
-                    <!-- Các chỉ số tóm tắt -->
-                    <div class="grid grid-cols-3 gap-4 pt-2">
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                            <div class="text-2xl font-bold text-slate-900">06</div>
-                            <div class="text-xs text-slate-500 mt-0.5">Bước thiết kế chuẩn STEM</div>
-                        </div>
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                            <div class="text-2xl font-bold text-emerald-600">QR + LED</div>
-                            <div class="text-xs text-slate-500 mt-0.5">Tích hợp công nghệ tương tác</div>
-                        </div>
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                            <div class="text-2xl font-bold text-amber-600">Xanh</div>
-                            <div class="text-xs text-slate-500 mt-0.5">Vật liệu tái chế thân thiện</div>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap items-center gap-3 pt-2">
-                        <a href="#hinh-anh-san-pham" class="px-6 py-3 rounded-xl bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-all shadow-sm">
-                            Xem hình ảnh sản phẩm
-                        </a>
-                        <a href="#gioi-thieu" class="px-6 py-3 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm hover:bg-slate-200 transition-all">
-                            Tìm hiểu chi tiết dự án
-                        </a>
+                    <!-- 3 Nút Đèn Đỏ - Vàng - Xanh -->
+                    <div class="flex items-center gap-2 px-3 py-2 bg-paperLight box-ink shrink-0">
+                        <button onclick="setTrafficLight('red')" id="lamp-red" title="Đỏ: Xe dừng lại, Học sinh qua đường" class="lamp active-red w-5 h-5 rounded-full box-ink bg-sigOrange cursor-pointer" aria-label="Đèn đỏ"></button>
+                        <button onclick="setTrafficLight('yellow')" id="lamp-yellow" title="Vàng: Giảm tốc độ & quan sát" class="lamp w-5 h-5 rounded-full box-ink bg-sigYellow cursor-pointer" aria-label="Đèn vàng"></button>
+                        <button onclick="setTrafficLight('green')" id="lamp-green" title="Xanh: Xe di chuyển trật tự vào vịnh đón" class="lamp w-5 h-5 rounded-full box-ink bg-sigGreen cursor-pointer" aria-label="Đèn xanh"></button>
                     </div>
                 </div>
 
-                <!-- Cột Ảnh đại diện chính của sản phẩm (Chừa trống src="" để bạn chèn link) -->
-                <div class="lg:col-span-5">
-                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="image-slot-container relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center">
-                            
-                            <!-- ========================================================================= -->
-                            <!-- VỊ TRÍ 1: CHÈN LINK ẢNH ĐẠI DIỆN CHÍNH CỦA MÔ HÌNH VÀO src="" BÊN DƯỚI   -->
-                            <!-- Ví dụ: src="https://link-anh-cua-ban.com/anh-mo-hinh.jpg"                 -->
-                            <!-- ========================================================================= -->
-                            <img src="" alt="Ảnh đại diện Mô hình Cổng Trường An Toàn" />
+            </div>
+        </header>
 
-                            <!-- Giao diện chờ khi chưa chèn link ảnh -->
-                            <div class="placeholder-guide text-center p-6">
-                                <div class="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center mx-auto mb-3 text-slate-400 shadow-sm">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                </div>
-                                <p class="text-sm font-semibold text-slate-700">Khung ảnh đại diện sản phẩm chính</p>
-                                <p class="text-xs text-slate-500 mt-1">Chèn link ảnh vào thuộc tính <code class="px-1.5 py-0.5 bg-white rounded border text-emerald-700 font-mono">src=""</code> ở Vị trí 1 trong code</p>
-                            </div>
+        <!-- ==================== KHUNG TIÊU ĐỀ CHÍNH (HERO TITLE BLOCK) ==================== -->
+        <section class="bb-ink">
+            <div class="grid grid-cols-1 lg:grid-cols-12">
+
+                <!-- Cột Trái (7/12): Tiêu đề lớn & Khẩu hiệu -->
+                <div class="lg:col-span-7 p-6 sm:p-10 lg:p-12 bb-ink lg:border-b-0 lg:br-ink flex flex-col justify-between bg-paper">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 box-ink bg-paperDark font-mono text-xs font-semibold uppercase mb-6">
+                            <span class="w-2 h-2 bg-sigGreen inline-block"></span>
+                            HỒ SƠ THIẾT KẾ &amp; MÔ PHỎNG QUY HOẠCH GIAO THÔNG HỌC ĐƯỜNG
                         </div>
 
-                        <div class="mt-3 px-2 flex items-center justify-between text-xs text-slate-500">
-                            <span class="font-medium text-slate-700">Sản phẩm: 01 Mô hình "Cổng trường an toàn"</span>
-                            <span class="inline-flex items-center gap-1.5 text-emerald-600 font-medium">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 traffic-glow"></span>
-                                Hoàn thiện
+                        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight leading-[0.95] text-ink mb-6">
+                            CỔNG TRƯỜNG<br/>
+                            <span class="text-sigGreen">AN TOÀN</span>
+                        </h1>
+
+                        <p class="text-lg sm:text-xl font-semibold text-ink/90 border-l-4 border-sigOrange pl-4 py-1 mb-6">
+                            “Thiết kế hôm nay – Một môi trường an toàn hơn ngày mai!”
+                        </p>
+                    </div>
+
+                    <!-- Thanh điều hướng nhanh đến 3 tính năng tương tác mới -->
+                    <div class="pt-6 bt-ink">
+                        <div class="font-mono text-[11px] uppercase tracking-widest text-ink/60 mb-3">
+                            TRUY CẬP NHANH CÁC PHÂN KHU TƯƠNG TÁC TRÊN TRANG:
+                        </div>
+                        <div class="flex flex-wrap gap-2.5">
+                            <a href="#sa-ban-2d" class="px-3.5 py-2 box-ink bg-ink text-paper font-mono text-xs font-bold uppercase hover:bg-sigGreen transition-colors">
+                                [01] Sa Bàn Kỹ Thuật 2D &amp; Gạt Trước/Sau ↓
+                            </a>
+                            <a href="#bang-quy-tac" class="px-3.5 py-2 box-ink bg-paperLight text-ink font-mono text-xs font-bold uppercase hover:bg-paperDark transition-colors">
+                                [02] Bảng Quy Tắc An Toàn Phân Vai ↓
+                            </a>
+                            <a href="#nghiem-thu" class="px-3.5 py-2 box-ink bg-paperLight text-ink font-mono text-xs font-bold uppercase hover:bg-paperDark transition-colors">
+                                [03] Định Mức Vật Liệu &amp; Nghiệm Thu ↓
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cột Phải (5/12): Đặt vấn đề / Thử thách thiết kế -->
+                <div class="lg:col-span-5 p-6 sm:p-10 bg-paperLight flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="font-mono text-xs font-bold uppercase px-2.5 py-1 bg-sigOrange text-paper">
+                                BÀI TOÁN THỬ THÁCH
                             </span>
+                            <span class="font-mono text-xs text-ink/60">TRƯỜNG THCS</span>
+                        </div>
+
+                        <p class="text-lg sm:text-xl font-bold leading-snug text-ink mt-3 p-4 box-ink bg-paper">
+                            “Làm thế nào để thiết kế khu vực cổng trường giúp học sinh và phụ huynh di chuyển an toàn, trật tự?”
+                        </p>
+
+                        <p class="text-xs sm:text-sm text-ink/80 mt-4 leading-relaxed">
+                            Dự án tập trung giải quyết triệt để tình trạng ùn tắc và lộn xộn vào giờ cao điểm tan trường thông qua việc <strong>tái quy hoạch mặt bằng cổng trường</strong>, tách biệt luồng đi bộ của học sinh với khu vực dừng đỗ xe của phụ huynh và tích hợp hệ thống biển báo, đèn tín hiệu trực quan.
+                        </p>
+                    </div>
+
+                    <!-- Khung tóm tắt cấu trúc sản phẩm -->
+                    <div class="mt-6 pt-5 bt-ink grid grid-cols-3 gap-2 font-mono text-center">
+                        <div class="p-2.5 box-ink bg-paper">
+                            <span class="block text-xl font-black text-ink">06</span>
+                            <span class="text-[10px] uppercase text-ink/70">Hạng mục bản vẽ</span>
+                        </div>
+                        <div class="p-2.5 box-ink bg-paper">
+                            <span class="block text-xl font-black text-sigGreen">03</span>
+                            <span class="text-[10px] uppercase text-ink/70">Nhóm quy tắc</span>
+                        </div>
+                        <div class="p-2.5 box-ink bg-paper">
+                            <span class="block text-xl font-black text-sigOrange">04</span>
+                            <span class="text-[10px] uppercase text-ink/70">Chuẩn nghiệm thu</span>
                         </div>
                     </div>
                 </div>
 
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== THỬ THÁCH & MỤC TIÊU GIẢI PHÁP ==================== -->
-    <section id="gioi-thieu" class="py-16">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Câu hỏi đặt vấn đề -->
-            <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-10 mb-10 shadow-sm">
-                <div class="max-w-3xl">
-                    <span class="inline-block px-3 py-1 rounded-md bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-wider mb-3">
-                        Bài toán đặt ra (Thử thách)
-                    </span>
-                    <h2 class="text-xl sm:text-2xl font-bold leading-snug">
-                        “Làm thế nào để thiết kế khu vực cổng trường giúp học sinh và phụ huynh di chuyển an toàn, trật tự?”
+        <!-- ==================== MỤC 01: ĐỐI CHIẾU THỰC TRẠNG & ĐỀ XUẤT GIẢI PHÁP (BƯỚC 1 & 2) ==================== -->
+        <section class="bb-ink">
+            <div class="p-4 sm:px-10 bg-ink text-paper flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="font-mono text-xs px-2 py-0.5 bg-sigYellow text-ink font-bold">MỤC 01</span>
+                    <h2 class="font-mono text-sm sm:text-base font-bold uppercase tracking-wider">
+                        ĐỐI CHIẾU THỰC TRẠNG (BƯỚC 1) &amp; ĐỀ XUẤT GIẢI PHÁP QUY HOẠCH (BƯỚC 2)
                     </h2>
                 </div>
+                <span class="font-mono text-xs text-paper/70">PHÂN TÍCH NGUYÊN NHÂN &amp; PHƯƠNG ÁN XỬ LÝ</span>
             </div>
 
-            <!-- So sánh Thực trạng & Giải pháp của Mô hình -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <!-- Cột 1: Thực trạng tại cổng trường -->
-                <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
-                    <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 font-bold">
-                            !
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-900">Vấn đề thường gặp tại cổng trường</h3>
-                            <p class="text-xs text-slate-500">Qua quan sát thực tế giờ tan tầm</p>
-                        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y-[1.5px] md:divide-y-0 md:divide-x-[1.5px] divide-[#161616]">
+                <!-- Cột Thực trạng -->
+                <div class="p-6 sm:p-8 bg-paper">
+                    <div class="flex items-center justify-between pb-3 mb-4 bb-ink">
+                        <span class="font-mono text-xs font-bold uppercase text-sigOrange">
+                            [ ! ] 04 VẤN ĐỀ THƯỜNG GẶP TẠI CỔNG TRƯỜNG
+                        </span>
+                        <span class="font-mono text-[11px] text-ink/60">BƯỚC 1: TÌM HIỂU</span>
                     </div>
-
-                    <ul class="space-y-3.5 text-sm text-slate-700">
-                        <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50">
-                            <span class="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">✕</span>
+                    <ul class="space-y-3 text-sm">
+                        <li class="p-3 box-ink bg-paperLight flex items-start gap-3">
+                            <span class="font-mono font-bold text-sigOrange">01.</span>
                             <div>
-                                <strong class="text-slate-900 block">Ùn tắc giao thông cục bộ</strong>
-                                Học sinh và phương tiện dồn ứ ngay trước cánh cổng chính vào giờ cao điểm.
+                                <strong class="block uppercase text-xs font-mono">Ùn tắc giao thông giờ cao điểm</strong>
+                                <span class="text-ink/80 text-xs">Phương tiện của phụ huynh và học sinh dồn ứ ngay trước cánh cổng chính, gây kẹt xe cục bộ.</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50">
-                            <span class="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">✕</span>
+                        <li class="p-3 box-ink bg-paperLight flex items-start gap-3">
+                            <span class="font-mono font-bold text-sigOrange">02.</span>
                             <div>
-                                <strong class="text-slate-900 block">Dừng đỗ xe sai quy định</strong>
-                                Phụ huynh dừng xe tràn xuống lòng đường vì thiếu khu vực chờ riêng biệt.
+                                <strong class="block uppercase text-xs font-mono">Dừng đỗ xe sai quy định</strong>
+                                <span class="text-ink/80 text-xs">Phụ huynh dừng xe tràn xuống lòng đường, quay đầu xe tự phát ngay trước lối ra vào của học sinh.</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50">
-                            <span class="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">✕</span>
+                        <li class="p-3 box-ink bg-paperLight flex items-start gap-3">
+                            <span class="font-mono font-bold text-sigOrange">03.</span>
                             <div>
-                                <strong class="text-slate-900 block">Chưa có vạch kẻ qua đường rõ ràng</strong>
-                                Học sinh băng qua đường tự phát, tiềm ẩn nguy cơ va chạm giao thông.
+                                <strong class="block uppercase text-xs font-mono">Chưa có vạch qua đường an toàn</strong>
+                                <span class="text-ink/80 text-xs">Học sinh phải tự luồn lách, băng cắt chéo qua dòng xe đang lưu thông mà không có lối ưu tiên.</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50">
-                            <span class="w-5 h-5 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">✕</span>
+                        <li class="p-3 box-ink bg-paperLight flex items-start gap-3">
+                            <span class="font-mono font-bold text-sigOrange">04.</span>
                             <div>
-                                <strong class="text-slate-900 block">Thiếu hệ thống biển báo trực quan</strong>
-                                Thiếu biển chỉ dẫn lối đi bộ, biển cấm đỗ xe và đèn tín hiệu cảnh báo.
+                                <strong class="block uppercase text-xs font-mono">Thiếu biển báo &amp; tín hiệu điều tiết</strong>
+                                <span class="text-ink/80 text-xs">Không có biển cảnh báo khu vực trường học, biển phân khu đón trả hay đèn tín hiệu giảm tốc độ.</span>
                             </div>
                         </li>
                     </ul>
                 </div>
 
-                <!-- Cột 2: Giải pháp từ Mô hình Cổng trường an toàn -->
-                <div class="bg-white rounded-2xl p-6 sm:p-8 border border-emerald-200 shadow-sm">
-                    <div class="flex items-center gap-3 mb-5">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 font-bold">
-                            ✓
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-900">Giải pháp trên Mô hình Sản phẩm</h3>
-                            <p class="text-xs text-emerald-600 font-medium">4 tiêu chuẩn cốt lõi đã hoàn thiện</p>
-                        </div>
+                <!-- Cột Giải pháp -->
+                <div class="p-6 sm:p-8 bg-paperLight">
+                    <div class="flex items-center justify-between pb-3 mb-4 bb-ink">
+                        <span class="font-mono text-xs font-bold uppercase text-sigGreen">
+                            [ ✓ ] 04 GIẢI PHÁP TỔ CHỨC LẠI KHÔNG GIAN
+                        </span>
+                        <span class="font-mono text-[11px] text-ink/60">BƯỚC 2: ĐỀ XUẤT GIẢI PHÁP</span>
                     </div>
-
-                    <ul class="space-y-3.5 text-sm text-slate-700">
-                        <li class="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100">
-                            <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">✓</span>
+                    <ul class="space-y-3 text-sm">
+                        <li class="p-3 box-ink bg-paper flex items-start gap-3">
+                            <span class="font-mono font-bold text-sigGreen">01.</span>
                             <div>
-                                <strong class="text-slate-900 block">Cổng trường & Đường giao thông phân luồng</strong>
-                                Thiết kế rõ cổng chính, vỉa hè và lòng đường thông thoáng, tách biệt luồng di chuyển.
+                                <strong class="block uppercase text-xs font-mono">Bố trí Khu vực đón học sinh riêng biệt</strong>
+                                <span class="text-ink/80 text-xs">Thiết kế vịnh dừng đỗ xe dành riêng cho phụ huynh nằm lệch về một bên cổng, tách khỏi lòng đường chính.</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100">
-                            <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">✓</span>
+                        <li class="p-3 box-ink bg-paper flex items-start gap-3">
+                            <span class="font-mono font-bold text-sigGreen">02.</span>
                             <div>
-                                <strong class="text-slate-900 block">Khu vực đón học sinh, vạch qua đường & biển báo</strong>
-                                Bố trí bãi dừng xe chờ riêng cho phụ huynh, vạch trắng sang đường và hệ thống biển báo chuẩn.
+                                <strong class="block uppercase text-xs font-mono">Sắp xếp lối đi &amp; vạch qua đường hợp lý</strong>
+                                <span class="text-ink/80 text-xs">Kẻ vạch sơn trắng cho người đi bộ (Zebra crossing) nối thẳng từ vỉa hè cổng trường sang phía đối diện.</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100">
-                            <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">✓</span>
+                        <li class="p-3 box-ink bg-paper flex items-start gap-3">
+                            <span class="font-mono font-bold text-sigGreen">03.</span>
                             <div>
-                                <strong class="text-slate-900 block">Tích hợp Mã QR hướng dẫn quy tắc an toàn</strong>
-                                Quét mã QR gắn trực tiếp trên mô hình để xem bộ quy tắc ra vào cổng trường an toàn.
+                                <strong class="block uppercase text-xs font-mono">Tăng cường hệ thống biển báo chuẩn</strong>
+                                <span class="text-ink/80 text-xs">Lắp đặt biển báo chú ý trẻ em, biển chỉ dẫn khu vực đón học sinh, biển cấm đỗ xe trước cổng chính.</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100">
-                            <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">✓</span>
+                        <li class="p-3 box-ink bg-paper flex items-start gap-3">
+                            <span class="font-mono font-bold text-sigGreen">04.</span>
                             <div>
-                                <strong class="text-slate-900 block">Hệ thống đèn LED giao thông & yếu tố tương tác</strong>
-                                Bổ sung cột đèn tín hiệu Đỏ - Vàng - Xanh giúp mô hình sinh động và trực quan hơn.
+                                <strong class="block uppercase text-xs font-mono">Đề xuất tích hợp Đèn LED &amp; Bảng quy tắc</strong>
+                                <span class="text-ink/80 text-xs">Bổ sung cột đèn tín hiệu LED 3 màu điều tiết luồng xe và bảng quy tắc hướng dẫn học sinh, phụ huynh.</span>
                             </div>
                         </li>
                     </ul>
                 </div>
-
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== KHU VỰC HÌNH ẢNH SẢN PHẨM (CHỪA CODE TRỐNG ĐỂ CHÈN LINK ẢNH) ==================== -->
-    <section id="hinh-anh-san-pham" class="py-16 bg-white border-y border-slate-200">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <!-- Tiêu đề khu vực hình ảnh -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-                <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Thư viện trực quan</span>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">Hình Ảnh Sản Phẩm & Bản Thiết Kế</h2>
+        <!-- ==================== MỤC 02 (NÂNG CẤP #1 & #2): SA BÀN BẢN VẼ KỸ THUẬT 2D & MÔ PHỎNG TRƯỚC / SAU ==================== -->
+        <section id="sa-ban-2d" class="bb-ink scroll-mt-14">
+            <!-- Header Mục 02 -->
+            <div class="p-4 sm:px-10 bg-ink text-paper flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="font-mono text-xs px-2 py-0.5 bg-sigGreen text-paper font-bold">MỤC 02 • MÔ PHỎNG TƯƠNG TÁC</span>
+                    <h2 class="font-mono text-sm sm:text-base font-bold uppercase tracking-wider">
+                        SA BÀN BẢN VẼ KỸ THUẬT 2D &amp; ĐỐI CHIẾU TRƯỚC / SAU QUY HOẠCH (BƯỚC 3)
+                    </h2>
                 </div>
-                <p class="text-sm text-slate-500 max-w-md">
-                    Các góc chụp thực tế của mô hình "Cổng Trường An Toàn" từ bản vẽ phác thảo đến sản phẩm hoàn thiện.
-                </p>
+                <span class="font-mono text-xs text-sigYellow">BẤM VÀO CÁC PHÂN KHU TRÊN BẢN VẼ ĐỂ XEM CHI TIẾT KỸ THUẬT</span>
             </div>
 
-            <!-- Lưới 4 khung hình ảnh sản phẩm -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <!-- KHUNG ẢNH 1: TOÀN CẢNH MÔ HÌNH -->
-                <div class="group rounded-2xl border border-slate-200 bg-slate-50 p-4 transition-all hover:shadow-md">
-                    <div class="image-slot-container relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-white border-2 border-dashed border-slate-300 flex items-center justify-center">
-                        
-                        <!-- ========================================================================= -->
-                        <!-- VỊ TRÍ 2: CHÈN LINK ẢNH TOÀN CẢNH MÔ HÌNH VÀO GIỮA src="" BÊN DƯỚI       -->
-                        <!-- ========================================================================= -->
-                        <img src="" alt="Toàn cảnh mô hình Cổng Trường An Toàn" />
-
-                        <div class="placeholder-guide text-center p-6">
-                            <span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-mono mb-2">Ảnh sản phẩm 01</span>
-                            <p class="text-sm font-semibold text-slate-700">Toàn cảnh mô hình Cổng Trường An Toàn</p>
-                            <p class="text-xs text-slate-400 mt-1">Dán link ảnh vào <code class="text-emerald-600 font-mono">src=""</code> tại Vị trí 2</p>
-                        </div>
-                    </div>
-                    <div class="mt-4 px-1">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-bold text-slate-900">1. Góc nhìn toàn cảnh mô hình</h3>
-                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Tổng thể</span>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-1">
-                            Bao quát khu vực cổng trường THCS, lòng đường giao thông, vạch kẻ sang đường và cảnh quan xung quanh.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- KHUNG ẢNH 2: BẢN VẼ THIẾT KẾ -->
-                <div class="group rounded-2xl border border-slate-200 bg-slate-50 p-4 transition-all hover:shadow-md">
-                    <div class="image-slot-container relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-white border-2 border-dashed border-slate-300 flex items-center justify-center">
-                        
-                        <!-- ========================================================================= -->
-                        <!-- VỊ TRÍ 3: CHÈN LINK ẢNH BẢN VẼ THIẾT KẾ VÀO GIỮA src="" BÊN DƯỚI         -->
-                        <!-- ========================================================================= -->
-                        <img src="" alt="Bản vẽ thiết kế khu vực cổng trường" />
-
-                        <div class="placeholder-guide text-center p-6">
-                            <span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-mono mb-2">Ảnh sản phẩm 02</span>
-                            <p class="text-sm font-semibold text-slate-700">Bản vẽ thiết kế sơ đồ cổng trường</p>
-                            <p class="text-xs text-slate-400 mt-1">Dán link ảnh vào <code class="text-emerald-600 font-mono">src=""</code> tại Vị trí 3</p>
-                        </div>
-                    </div>
-                    <div class="mt-4 px-1">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-bold text-slate-900">2. Bản vẽ thiết kế & Quy hoạch (Bước 3)</h3>
-                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">Bản vẽ 2D</span>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-1">
-                            Sơ đồ bố trí cổng trường, đường đi, vạch qua đường, khu vực đón học sinh, biển báo và khu vực để xe.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- KHUNG ẢNH 3: KHU VỰC ĐÓN HỌC SINH & BIỂN BÁO -->
-                <div class="group rounded-2xl border border-slate-200 bg-slate-50 p-4 transition-all hover:shadow-md">
-                    <div class="image-slot-container relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-white border-2 border-dashed border-slate-300 flex items-center justify-center">
-                        
-                        <!-- ========================================================================= -->
-                        <!-- VỊ TRÍ 4: CHÈN LINK ẢNH KHU VỰC ĐÓN HỌC SINH VÀO GIỮA src="" BÊN DƯỚI    -->
-                        <!-- ========================================================================= -->
-                        <img src="" alt="Chi tiết khu vực đón học sinh và biển báo" />
-
-                        <div class="placeholder-guide text-center p-6">
-                            <span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-mono mb-2">Ảnh sản phẩm 03</span>
-                            <p class="text-sm font-semibold text-slate-700">Khu vực đón học sinh & Hệ thống biển báo</p>
-                            <p class="text-xs text-slate-400 mt-1">Dán link ảnh vào <code class="text-emerald-600 font-mono">src=""</code> tại Vị trí 4</p>
-                        </div>
-                    </div>
-                    <div class="mt-4 px-1">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-bold text-slate-900">3. Khu vực phụ huynh dừng đỗ đón học sinh</h3>
-                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">Chi tiết</span>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-1">
-                            Góc chụp cận cảnh khu vực phân làn dành riêng cho phụ huynh dừng xe và hệ thống biển báo giao thông.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- KHUNG ẢNH 4: ĐÈN LED GIAO THÔNG & TÍCH HỢP CÔNG NGHỆ -->
-                <div class="group rounded-2xl border border-slate-200 bg-slate-50 p-4 transition-all hover:shadow-md">
-                    <div class="image-slot-container relative aspect-[16/10] w-full rounded-xl overflow-hidden bg-white border-2 border-dashed border-slate-300 flex items-center justify-center">
-                        
-                        <!-- ========================================================================= -->
-                        <!-- VỊ TRÍ 5: CHÈN LINK ẢNH ĐÈN LED & MÃ QR TRÊN MÔ HÌNH VÀO src="" BÊN DƯỚI  -->
-                        <!-- ========================================================================= -->
-                        <img src="" alt="Hệ thống đèn LED giao thông và Mã QR trên mô hình" />
-
-                        <div class="placeholder-guide text-center p-6">
-                            <span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-mono mb-2">Ảnh sản phẩm 04</span>
-                            <p class="text-sm font-semibold text-slate-700">Đèn LED giao thông & Yếu tố tương tác</p>
-                            <p class="text-xs text-slate-400 mt-1">Dán link ảnh vào <code class="text-emerald-600 font-mono">src=""</code> tại Vị trí 5</p>
-                        </div>
-                    </div>
-                    <div class="mt-4 px-1">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-bold text-slate-900">4. Tích hợp đèn LED & Mã QR trên mô hình</h3>
-                            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800">Công nghệ</span>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-1">
-                            Cột đèn tín hiệu giao thông sử dụng đèn LED kết hợp bảng mã QR đặt ngay bên cạnh cổng trường.
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== 6 BƯỚC THỰC HIỆN DỰ ÁN ==================== -->
-    <section id="quy-trinh-6-buoc" class="py-16">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-2xl mx-auto mb-12">
-                <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Quy trình triển khai</span>
-                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">6 Bước Thực Hiện Dự Án</h2>
-                <p class="text-sm text-slate-500 mt-2">
-                    Hành trình từ việc quan sát thực tế tại cổng trường đến khi chế tạo và hoàn thiện sản phẩm mô hình.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Thanh Công Cụ Điều Khiển Mô Phỏng (Before/After Switch + Traffic Light Control) -->
+            <div class="p-4 sm:px-8 bg-paperDark bb-ink flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
                 
-                <!-- Bước 1 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+                <!-- Công tắc Gạt Trước / Sau Quy Hoạch (Nâng cấp #2) -->
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span class="font-mono text-xs font-bold uppercase text-ink/80 mr-1">CHẾ ĐỘ MẶT BẰNG:</span>
+                    <div class="inline-flex box-ink bg-paper p-1 gap-1">
+                        <button id="btn-mode-before" onclick="setSimulationMode('before')" class="px-3.5 py-2 font-mono text-xs font-bold uppercase transition-colors text-ink hover:bg-paperDark">
+                            [ ! ] HIỆN TRẠNG CHƯA QUY HOẠCH
+                        </button>
+                        <button id="btn-mode-after" onclick="setSimulationMode('after')" class="px-3.5 py-2 font-mono text-xs font-bold uppercase transition-colors bg-sigGreen text-paper">
+                            [ ✓ ] SAU KHI ÁP DỤNG MÔ HÌNH
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bộ điều khiển Pha Đèn Tín Hiệu ngay trên Sa bàn -->
+                <div id="sim-traffic-control-wrapper" class="flex flex-wrap items-center gap-2">
+                    <span class="font-mono text-xs font-bold uppercase text-ink/80">PHA ĐÈN TÍN HIỆU:</span>
+                    <button onclick="setTrafficLight('red')" id="sim-btn-red" class="px-3 py-1.5 box-ink font-mono text-xs font-bold uppercase bg-sigOrange text-paper">
+                        ● ĐÈN ĐỎ (HS QUA ĐƯỜNG)
+                    </button>
+                    <button onclick="setTrafficLight('yellow')" id="sim-btn-yellow" class="px-3 py-1.5 box-ink font-mono text-xs font-bold uppercase bg-paper text-ink hover:bg-paperLight">
+                        ● ĐÈN VÀNG (GIẢM TỐC)
+                    </button>
+                    <button onclick="setTrafficLight('green')" id="sim-btn-green" class="px-3 py-1.5 box-ink font-mono text-xs font-bold uppercase bg-paper text-ink hover:bg-paperLight">
+                        ● ĐÈN XANH (XE LƯU THÔNG)
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Khu vực chính của Sa bàn 2D (Trái: Bản vẽ SVG 8/12 | Phải: Inspector Thông số 4/12) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12">
+
+                <!-- CỘT TRÁI (8/12): BẢN VẼ SA BÀN SVG TƯƠNG TÁC -->
+                <div class="lg:col-span-8 p-4 sm:p-6 bb-ink lg:border-b-0 lg:br-ink blueprint-grid-bg flex flex-col justify-between">
+                    
+                    <!-- Thanh trạng thái phía trên bản vẽ -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 bb-ink font-mono text-xs">
+                        <div class="flex items-center gap-2">
+                            <span id="blueprint-mode-badge" class="px-2 py-0.5 bg-sigGreen text-paper font-bold uppercase">
+                                MẶT BẰNG: ĐÃ QUY HOẠCH AN TOÀN
+                            </span>
+                            <span id="blueprint-flow-desc" class="text-ink/80 font-semibold">
+                                Đèn Đỏ cho xe — Học sinh đang đi bộ qua vạch kẻ đường an toàn.
+                            </span>
+                        </div>
+                        <span class="text-ink/50">TỶ LỆ MÔ HÌNH: 1:50 (BẢN VẼ MẶT BẰNG)</span>
+                    </div>
+
+                    <!-- KHUNG SVG SA BÀN 2D -->
+                    <div class="w-full box-ink bg-paperLight overflow-hidden relative">
+                        <svg id="blueprint-svg" viewBox="0 0 800 480" class="w-full h-auto block select-none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <!-- Lưới kỹ thuật mảnh bên trong SVG -->
+                                <pattern id="techGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#161616" stroke-width="0.4" stroke-opacity="0.18"/>
+                                </pattern>
+                                <!-- Họa tiết sọc chéo cảnh báo -->
+                                <pattern id="hazardPattern" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                                    <line x1="0" y1="0" x2="0" y2="12" stroke="#D9381E" stroke-width="6" stroke-opacity="0.25" />
+                                </pattern>
+                            </defs>
+
+                            <!-- Nền lưới bản vẽ -->
+                            <rect width="800" height="480" fill="#FAF8F5" />
+                            <rect width="800" height="480" fill="url(#techGrid)" />
+
+                            <!-- ==================== PHÂN KHU 1 & 6: KHUÔN VIÊN TRƯỜNG THCS & KHU VỰC ĐỂ XE (PHÍA TRÊN: Y=0 -> 165) ==================== -->
+                            <!-- Nền sân trường -->
+                            <rect x="20" y="16" width="760" height="134" fill="#EAE5D9" stroke="#161616" stroke-width="1.5" />
+
+                            <!-- Khối nhà chính Trường THCS -->
+                            <g onclick="selectZone(1)" id="svg-zone-1" class="svg-zone selected-zone">
+                                <rect x="190" y="24" width="320" height="62" fill="#F4F1EA" stroke="#161616" stroke-width="2" />
+                                <rect x="250" y="34" width="200" height="28" fill="#161616" />
+                                <text x="350" y="53" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="14" font-weight="700">TRƯỜNG THCS</text>
+                                <text x="350" y="78" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="9" font-weight="600">KHỐI HỌC ĐƯỜNG &amp; SÂN TRƯỜNG</text>
+
+                                <!-- Tường rào & Cổng trường chính -->
+                                <line x1="20" y1="150" x2="265" y2="150" stroke="#161616" stroke-width="4" />
+                                <line x1="435" y1="150" x2="780" y2="150" stroke="#161616" stroke-width="4" />
+                                <!-- 2 Trụ cổng trường -->
+                                <rect x="260" y="132" width="22" height="26" fill="#D97706" stroke="#161616" stroke-width="2" />
+                                <rect x="418" y="132" width="22" height="26" fill="#D97706" stroke="#161616" stroke-width="2" />
+                                <!-- Bảng tên Cổng Trường -->
+                                <rect x="275" y="116" width="150" height="20" fill="#161616" />
+                                <text x="350" y="130" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="10" font-weight="700">[01] CỔNG TRƯỜNG</text>
+                            </g>
+
+                            <!-- PHÂN KHU 6: KHU VỰC ĐỂ XE TRONG TRƯỜNG (Bên phải sân trường) -->
+                            <g onclick="selectZone(6)" id="svg-zone-6" class="svg-zone">
+                                <rect x="535" y="26" width="230" height="110" fill="#E2ECE5" stroke="#1B7A43" stroke-width="2" />
+                                <rect x="535" y="26" width="230" height="22" fill="#1B7A43" />
+                                <text x="650" y="41" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="10" font-weight="700">[06] KHU VỰC ĐỂ XE HỌC SINH</text>
+                                <!-- Các ô kẻ để xe đạp/xe điện gọn gàng -->
+                                <g stroke="#1B7A43" stroke-width="1.2" fill="#FAF8F5">
+                                    <rect x="550" y="58" width="28" height="30" />
+                                    <rect x="585" y="58" width="28" height="30" />
+                                    <rect x="620" y="58" width="28" height="30" />
+                                    <rect x="655" y="58" width="28" height="30" />
+                                    <rect x="690" y="58" width="28" height="30" />
+                                    <rect x="725" y="58" width="28" height="30" />
+                                </g>
+                                <text x="650" y="108" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="9" font-weight="600">PHÂN LÀN XE ĐẠP &amp; XE ĐẠP ĐIỆN</text>
+                                <text x="650" y="124" text-anchor="middle" fill="#1B7A43" font-family="IBM Plex Mono" font-size="9" font-weight="700">LỐI VÀO CỔNG PHỤ →</text>
+                            </g>
+
+                            <!-- Khu vực cây xanh bóng mát bên trái sân trường -->
+                            <g>
+                                <rect x="35" y="26" width="135" height="110" fill="#E6E1D6" stroke="#161616" stroke-width="1.5" stroke-dasharray="4 3" />
+                                <circle cx="70" cy="65" r="18" fill="#1B7A43" fill-opacity="0.25" stroke="#1B7A43" stroke-width="1.5" />
+                                <circle cx="125" cy="65" r="18" fill="#1B7A43" fill-opacity="0.25" stroke="#1B7A43" stroke-width="1.5" />
+                                <text x="102" y="112" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="9" font-weight="600">MẢNG XANH TÁI CHẾ</text>
+                            </g>
+
+                            <!-- ==================== VỈA HÈ PHÍA TRƯỜNG HỌC (Y=150 -> 205) ==================== -->
+                            <rect x="20" y="152" width="760" height="53" fill="#DED8CA" stroke="#161616" stroke-width="1.5" />
+                            <text x="115" y="175" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="9" font-weight="600">VỈA HÈ ĐI BỘ AN TOÀN</text>
+
+                            <!-- ==================== PHÂN KHU 2: ĐƯỜNG ĐI / LÒNG ĐƯỜNG GIAO THÔNG 2 LÀN (Y=205 -> 355) ==================== -->
+                            <g onclick="selectZone(2)" id="svg-zone-2" class="svg-zone">
+                                <rect x="20" y="205" width="760" height="150" fill="#D2CCC0" stroke="#161616" stroke-width="2" />
+                                <!-- Tim đường nét đứt phân 2 làn ngược chiều -->
+                                <line x1="20" y1="280" x2="780" y2="280" stroke="#FAF8F5" stroke-width="3" stroke-dasharray="18 14" />
+                                <!-- Nhãn Phân khu 2 -->
+                                <rect x="32" y="214" width="175" height="20" fill="#161616" />
+                                <text x="119" y="228" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="10" font-weight="700">[02] ĐƯỜNG GIAO THÔNG</text>
+                                <!-- Mũi tên chỉ hướng làn đường -->
+                                <text x="115" y="262" fill="#161616" fill-opacity="0.65" font-family="IBM Plex Mono" font-size="10" font-weight="700">← LÀN XE HƯỚNG ĐÔNG - TÂY</text>
+                                <text x="115" y="340" fill="#161616" fill-opacity="0.65" font-family="IBM Plex Mono" font-size="10" font-weight="700">LÀN XE HƯỚNG TÂY - ĐÔNG →</text>
+                            </g>
+
+                            <!-- ==================== VỈA HÈ ĐỐI DIỆN & VỊNH ĐÓN HỌC SINH (Y=355 -> 460) ==================== -->
+                            <rect x="20" y="355" width="760" height="105" fill="#DED8CA" stroke="#161616" stroke-width="1.5" />
+                            <text x="140" y="425" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="9" font-weight="600">HÀNH LANG CHỜ PHÍA ĐỐI DIỆN</text>
+
+                            <!-- ==================== LAYER A: CÁC HẠNG MỤC SAU KHI QUY HOẠCH AN TOÀN (MẶC ĐỊNH HIỆN) ==================== -->
+                            <g id="layer-after-planning">
+
+                                <!-- Vạch dừng xe (Stop Line) hai bên vạch qua đường -->
+                                <line x1="265" y1="280" x2="265" y2="355" stroke="#FAF8F5" stroke-width="5" />
+                                <line x1="435" y1="205" x2="435" y2="280" stroke="#FAF8F5" stroke-width="5" />
+
+                                <!-- PHÂN KHU 3: VẠCH QUA ĐƯỜNG (ZEBRA CROSSING) -->
+                                <g onclick="selectZone(3)" id="svg-zone-3" class="svg-zone">
+                                    <rect x="295" y="205" width="110" height="150" fill="#161616" fill-opacity="0.12" stroke="#1B7A43" stroke-width="2" />
+                                    <!-- Các thanh vạch trắng qua đường -->
+                                    <g fill="#FAF8F5" stroke="#161616" stroke-width="1">
+                                        <rect x="307" y="213" width="86" height="14" />
+                                        <rect x="307" y="235" width="86" height="14" />
+                                        <rect x="307" y="257" width="86" height="14" />
+                                        <rect x="307" y="279" width="86" height="14" />
+                                        <rect x="307" y="301" width="86" height="14" />
+                                        <rect x="307" y="323" width="86" height="14" />
+                                    </g>
+                                    <!-- Nhãn Phân khu 3 -->
+                                    <rect x="285" y="362" width="130" height="22" fill="#1B7A43" stroke="#161616" stroke-width="1.5" />
+                                    <text x="350" y="377" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="10" font-weight="700">[03] VẠCH QUA ĐƯỜNG</text>
+                                </g>
+
+                                <!-- PHÂN KHU 4: KHU VỰC ĐÓN HỌC SINH (VỊNH ĐỖ XE PHỤ HUYNH TÁCH BIỆT) -->
+                                <g onclick="selectZone(4)" id="svg-zone-4" class="svg-zone">
+                                    <rect x="465" y="355" width="295" height="92" fill="#E2ECE5" stroke="#1B7A43" stroke-width="2.5" />
+                                    <!-- Đường dẫn tách làn vào vịnh đón (Kiss & Ride) -->
+                                    <path d="M 455 345 L 495 385 L 715 385 L 755 345" fill="none" stroke="#1B7A43" stroke-width="2.5" stroke-dasharray="8 5" class="animate-flow-slow" />
+                                    <!-- Các ô đỗ xe phụ huynh chờ đón -->
+                                    <g fill="#FAF8F5" stroke="#161616" stroke-width="1.5">
+                                        <rect x="500" y="392" width="68" height="26" />
+                                        <rect x="578" y="392" width="68" height="26" />
+                                        <rect x="656" y="392" width="68" height="26" />
+                                    </g>
+                                    <text x="534" y="409" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="8" font-weight="700">Ô ĐÓN #1</text>
+                                    <text x="612" y="409" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="8" font-weight="700">Ô ĐÓN #2</text>
+                                    <text x="690" y="409" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="8" font-weight="700">Ô ĐÓN #3</text>
+
+                                    <rect x="480" y="424" width="265" height="20" fill="#161616" />
+                                    <text x="612" y="438" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="10" font-weight="700">[04] KHU VỰC ĐÓN HỌC SINH (PHỤ HUYNH)</text>
+                                </g>
+
+                                <!-- PHÂN KHU 5: HỆ THỐNG BIỂN BÁO & CỘT ĐÈN TÍN HIỆU LED -->
+                                <g onclick="selectZone(5)" id="svg-zone-5" class="svg-zone">
+                                    <!-- Khung đế cột đèn & biển báo ngay góc vạch qua đường -->
+                                    <rect x="422" y="154" width="150" height="48" fill="#FAF8F5" stroke="#161616" stroke-width="2" />
+                                    <!-- Hộp 3 đèn LED trên bản vẽ SVG (Đồng bộ màu trực tiếp) -->
+                                    <rect x="430" y="161" width="22" height="34" fill="#161616" />
+                                    <circle id="svg-led-red" cx="441" cy="168" r="4.2" fill="#D9381E" />
+                                    <circle id="svg-led-yellow" cx="441" cy="178" r="4.2" fill="#444444" />
+                                    <circle id="svg-led-green" cx="441" cy="188" r="4.2" fill="#444444" />
+
+                                    <!-- Biển báo tam giác "Chú ý trẻ em" & Biển chỉ dẫn -->
+                                    <polygon points="472,162 459,186 485,186" fill="#EAB308" stroke="#D9381E" stroke-width="2" />
+                                    <text x="472" y="183" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="9" font-weight="700">!</text>
+
+                                    <text x="528" y="173" text-anchor="middle" fill="#161616" font-family="IBM Plex Mono" font-size="9" font-weight="700">[05] BIỂN BÁO</text>
+                                    <text x="528" y="187" text-anchor="middle" fill="#D9381E" font-family="IBM Plex Mono" font-size="9" font-weight="700">&amp; ĐÈN LED</text>
+                                </g>
+
+                                <!-- HIỆU ỨNG DÒNG DI CHUYỂN HỌC SINH & XE TRONG CHẾ ĐỘ ĐÃ QUY HOẠCH -->
+                                <!-- Luồng Học sinh đi bộ qua vạch Zebra (Nổi bật khi Đèn Đỏ cho xe) -->
+                                <g id="svg-pedestrian-flow">
+                                    <line x1="335" y1="155" x2="335" y2="360" stroke="#1B7A43" stroke-width="4" stroke-dasharray="10 8" class="animate-flow-fast" />
+                                    <line x1="365" y1="360" x2="365" y2="155" stroke="#1B7A43" stroke-width="4" stroke-dasharray="10 8" class="animate-flow-fast" />
+                                    <!-- Chấm đại diện học sinh qua đường -->
+                                    <circle cx="335" cy="245" r="7" fill="#1B7A43" stroke="#FAF8F5" stroke-width="2" />
+                                    <circle cx="335" cy="295" r="7" fill="#1B7A43" stroke="#FAF8F5" stroke-width="2" />
+                                    <circle cx="365" cy="270" r="7" fill="#1B7A43" stroke="#FAF8F5" stroke-width="2" />
+                                    <rect x="292" y="180" width="116" height="19" fill="#1B7A43" />
+                                    <text x="350" y="193" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">HỌC SINH QUA ĐƯỜNG AN TOÀN</text>
+                                </g>
+
+                                <!-- Luồng Xe lưu thông / Dừng chờ trước vạch (Thay đổi theo Đèn Đỏ / Xanh) -->
+                                <g id="svg-vehicle-stopped">
+                                    <!-- Xe dừng trật tự trước vạch dừng khi Đèn Đỏ -->
+                                    <rect x="180" y="302" width="68" height="28" fill="#1D4ED8" stroke="#161616" stroke-width="1.5" />
+                                    <text x="214" y="320" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">XE DỪNG</text>
+
+                                    <rect x="452" y="230" width="68" height="28" fill="#1D4ED8" stroke="#161616" stroke-width="1.5" />
+                                    <text x="486" y="248" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">XE DỪNG</text>
+                                </g>
+
+                                <g id="svg-vehicle-moving" class="hidden">
+                                    <!-- Đường luồng xe chạy thẳng mượt mà khi Đèn Xanh -->
+                                    <line x1="30" y1="316" x2="770" y2="316" stroke="#1D4ED8" stroke-width="3.5" stroke-dasharray="14 10" class="animate-flow-fast" />
+                                    <line x1="770" y1="244" x2="30" y2="244" stroke="#1D4ED8" stroke-width="3.5" stroke-dasharray="14 10" class="animate-flow-fast" />
+                                    <rect x="290" y="180" width="120" height="19" fill="#D97706" />
+                                    <text x="350" y="193" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="8.5" font-weight="700">HS CHỜ TRÊN VỈA HÈ</text>
+                                </g>
+
+                            </g>
+
+                            <!-- ==================== LAYER B: HIỆN TRẠNG CHƯA QUY HOẠCH (ẨN MẶC ĐỊNH, HIỆN KHI GẠT NÚT TRƯỚC QUY HOẠCH) ==================== -->
+                            <g id="layer-before-planning" class="hidden">
+                                <!-- Vùng cảnh báo ùn tắc trước cổng trường -->
+                                <rect x="210" y="195" width="320" height="170" fill="url(#hazardPattern)" stroke="#D9381E" stroke-width="2.5" stroke-dasharray="8 4" />
+
+                                <!-- Xe phụ huynh đỗ lộn xộn chắn ngang cổng trường -->
+                                <g transform="rotate(-14 310 245)">
+                                    <rect x="275" y="232" width="70" height="28" fill="#D9381E" stroke="#161616" stroke-width="1.5" />
+                                    <text x="310" y="250" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="8" font-weight="700">ĐỖ LẤN LÀN</text>
+                                </g>
+                                <g transform="rotate(18 415 295)">
+                                    <rect x="380" y="280" width="70" height="28" fill="#D9381E" stroke="#161616" stroke-width="1.5" />
+                                    <text x="415" y="298" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="8" font-weight="700">DỪNG TỰ PHÁT</text>
+                                </g>
+                                <g transform="rotate(-8 250 315)">
+                                    <rect x="215" y="300" width="68" height="28" fill="#D9381E" stroke="#161616" stroke-width="1.5" />
+                                    <text x="249" y="318" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="8" font-weight="700">CHẮN LỐI ĐI</text>
+                                </g>
+
+                                <!-- Đường cắt chéo nguy hiểm của học sinh khi chưa có vạch qua đường -->
+                                <path d="M 350 155 L 265 365 M 350 155 L 445 365" stroke="#D9381E" stroke-width="3" stroke-dasharray="6 6" />
+
+                                <!-- Điểm xung đột nhấp nháy -->
+                                <g class="conflict-pulse">
+                                    <circle cx="350" cy="268" r="18" fill="#D9381E" stroke="#FAF8F5" stroke-width="2.5" />
+                                    <text x="350" y="273" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="12" font-weight="700">!</text>
+                                </g>
+
+                                <!-- Nhãn cảnh báo hiện trạng -->
+                                <rect x="215" y="375" width="310" height="54" fill="#D9381E" stroke="#161616" stroke-width="2" />
+                                <text x="370" y="397" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="11" font-weight="700">[CẢNH BÁO] ĐIỂM XUNG ĐỘT GIAO THÔNG</text>
+                                <text x="370" y="416" text-anchor="middle" fill="#FAF8F5" font-family="IBM Plex Mono" font-size="9">Không có vạch qua đường • Xe đỗ tràn lòng đường • Thiếu biển báo</text>
+                            </g>
+
+                        </svg>
+                    </div>
+
+                    <!-- 6 Nút Chọn Nhanh Phân Khu Bản Vẽ (Đồng bộ với SVG) -->
+                    <div class="mt-4 pt-3 bt-ink">
+                        <div class="font-mono text-[11px] uppercase text-ink/60 mb-2">
+                            CHỌN NHANH 06 HẠNG MỤC TRONG BẢN VẼ THIẾT KẾ (BƯỚC 3):
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                            <button onclick="selectZone(1)" id="zone-btn-1" class="px-2.5 py-2 box-ink bg-ink text-paper font-mono text-[11px] font-bold uppercase text-left transition-colors">
+                                01. Cổng trường
+                            </button>
+                            <button onclick="selectZone(2)" id="zone-btn-2" class="px-2.5 py-2 box-ink bg-paperLight text-ink font-mono text-[11px] font-bold uppercase text-left hover:bg-paperDark transition-colors">
+                                02. Đường đi
+                            </button>
+                            <button onclick="selectZone(3)" id="zone-btn-3" class="px-2.5 py-2 box-ink bg-paperLight text-ink font-mono text-[11px] font-bold uppercase text-left hover:bg-paperDark transition-colors">
+                                03. Vạch qua đường
+                            </button>
+                            <button onclick="selectZone(4)" id="zone-btn-4" class="px-2.5 py-2 box-ink bg-paperLight text-ink font-mono text-[11px] font-bold uppercase text-left hover:bg-paperDark transition-colors">
+                                04. Khu đón HS
+                            </button>
+                            <button onclick="selectZone(5)" id="zone-btn-5" class="px-2.5 py-2 box-ink bg-paperLight text-ink font-mono text-[11px] font-bold uppercase text-left hover:bg-paperDark transition-colors">
+                                05. Biển báo &amp; LED
+                            </button>
+                            <button onclick="selectZone(6)" id="zone-btn-6" class="px-2.5 py-2 box-ink bg-paperLight text-ink font-mono text-[11px] font-bold uppercase text-left hover:bg-paperDark transition-colors">
+                                06. Khu để xe
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- CỘT PHẢI (4/12): BẢNG THÔNG SỐ KỸ THUẬT PHÂN KHU ĐANG CHỌN (INSPECTOR PANEL) -->
+                <div class="lg:col-span-4 p-6 sm:p-8 bg-paper flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 rounded-lg bg-orange-50 text-orange-700 font-bold text-xs uppercase">Bước 1</span>
-                            <span class="text-slate-300 font-extrabold text-xl">01</span>
+                        <div class="flex items-center justify-between pb-3 mb-4 bb-ink">
+                            <span class="font-mono text-xs font-bold uppercase text-blueprint">
+                                THÔNG SỐ HẠNG MỤC ĐANG CHỌN
+                            </span>
+                            <span id="inspector-badge" class="font-mono text-xs px-2 py-0.5 bg-ink text-paper font-bold">
+                                HẠNG MỤC #01 / 06
+                            </span>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900 mb-2">Tìm hiểu thực tế</h3>
-                        <p class="text-sm text-slate-600 mb-4">
-                            Quan sát hoặc tìm hiểu những vấn đề thường gặp tại khu vực cổng trường vào giờ cao điểm:
+
+                        <h3 id="inspector-title" class="text-2xl font-black uppercase tracking-tight text-ink mb-2">
+                            01. CỔNG TRƯỜNG THCS
+                        </h3>
+
+                        <p id="inspector-role" class="text-xs sm:text-sm text-ink/80 leading-relaxed mb-5 p-3.5 box-ink bg-paperLight">
+                            Cổng chính kết nối khuôn viên trường học với trục đường giao thông phía trước, được thiết kế lùi vào tạo khoảng đệm vỉa hè rộng rãi giúp học sinh không tràn trực tiếp xuống lòng đường.
                         </p>
+
+                        <!-- Thông số chế tạo trên mô hình STEM -->
+                        <div class="space-y-3 font-mono text-xs">
+                            <div class="p-3 box-ink bg-paperLight">
+                                <span class="text-[10px] uppercase text-ink/60 block">VẬT LIỆU CHẾ TẠO TRÊN MÔ HÌNH (BƯỚC 4):</span>
+                                <span id="inspector-material" class="font-bold text-ink mt-1 block">
+                                    Bìa carton cứng tạo khối trụ cổng, que kem gỗ làm hàng rào và giấy màu trang trí bảng tên "TRƯỜNG THCS".
+                                </span>
+                            </div>
+
+                            <div class="p-3 box-ink bg-paperLight">
+                                <span class="text-[10px] uppercase text-sigOrange font-bold block">TRƯỚC KHI QUY HOẠCH:</span>
+                                <span id="inspector-before" class="text-ink/80 mt-1 block">
+                                    Học sinh và xe phụ huynh dồn ứ ngay sát mép cổng, không có ranh giới phân tách luồng đi bộ.
+                                </span>
+                            </div>
+
+                            <div class="p-3 box-ink bg-paperLight">
+                                <span class="text-[10px] uppercase text-sigGreen font-bold block">SAU KHI ÁP DỤNG MÔ HÌNH:</span>
+                                <span id="inspector-after" class="text-ink font-semibold mt-1 block">
+                                    Mở rộng hành lang đi bộ trước cổng, kết nối trực tiếp với vạch qua đường và tách riêng cổng phụ vào khu để xe.
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <ul class="space-y-1.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                        <li>• Ùn tắc giao thông giờ tan học</li>
-                        <li>• Dừng đỗ xe sai quy định</li>
-                        <li>• Chưa có vạch kẻ qua đường</li>
-                        <li>• Thiếu biển báo giao thông</li>
-                    </ul>
+
+                    <!-- Tóm tắt 4 chỉ số đối chiếu trực tiếp (Live Telemetry) -->
+                    <div class="mt-6 pt-5 bt-ink">
+                        <div class="font-mono text-[11px] font-bold uppercase tracking-wider text-ink/70 mb-2.5">
+                            ĐÁNH GIÁ HIỆU QUẢ MẶT BẰNG ĐANG HIỂN THỊ:
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 font-mono text-xs">
+                            <div class="p-2.5 box-ink bg-paperLight">
+                                <span class="text-[10px] text-ink/60 block">ĐIỂM XUNG ĐỘT</span>
+                                <span id="metric-conflict" class="font-bold text-sigGreen">0 ĐIỂM (AN TOÀN)</span>
+                            </div>
+                            <div class="p-2.5 box-ink bg-paperLight">
+                                <span class="text-[10px] text-ink/60 block">DỪNG ĐỖ ĐÓN HS</span>
+                                <span id="metric-parking" class="font-bold text-sigGreen">ĐÚNG VỊNH ĐÓN</span>
+                            </div>
+                            <div class="p-2.5 box-ink bg-paperLight">
+                                <span class="text-[10px] text-ink/60 block">LỐI QUA ĐƯỜNG</span>
+                                <span id="metric-crossing" class="font-bold text-sigGreen">CÓ VẠCH ZEBRA</span>
+                            </div>
+                            <div class="p-2.5 box-ink bg-paperLight">
+                                <span class="text-[10px] text-ink/60 block">ĐIỀU TIẾT TÍN HIỆU</span>
+                                <span id="metric-signal" class="font-bold text-sigGreen">ĐÈN LED + BIỂN BÁO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== MỤC 03: LỘ TRÌNH 06 BƯỚC THỰC HIỆN DỰ ÁN (ACCORDION LEDGER) ==================== -->
+        <section class="bb-ink">
+            <div class="p-4 sm:px-10 bg-ink text-paper flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="font-mono text-xs px-2 py-0.5 bg-sigYellow text-ink font-bold">MỤC 03</span>
+                    <h2 class="font-mono text-sm sm:text-base font-bold uppercase tracking-wider">
+                        QUY TRÌNH 06 BƯỚC THỰC HIỆN DỰ ÁN STEM
+                    </h2>
+                </div>
+                <button onclick="toggleAllSteps()" id="toggle-all-btn" class="font-mono text-xs underline text-sigYellow hover:text-paper cursor-pointer">
+                    MỞ RỘNG TẤT CẢ [+]
+                </button>
+            </div>
+
+            <div class="divide-y-[1.5px] divide-[#161616]">
+                <!-- Bước 1 -->
+                <div class="bg-paper hover:bg-paperLight transition-colors">
+                    <button onclick="toggleStep(1)" class="w-full p-5 sm:px-10 text-left flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <span class="font-mono text-xs font-bold px-2.5 py-1 box-ink bg-paperDark">BƯỚC 01</span>
+                            <span class="font-bold text-base sm:text-lg uppercase">Tìm hiểu thực trạng cổng trường</span>
+                        </div>
+                        <span id="step-icon-1" class="font-mono text-lg font-bold">[+]</span>
+                    </button>
+                    <div id="step-detail-1" class="hidden px-5 sm:px-10 pb-5 pt-2 bt-ink bg-paperLight text-sm text-ink/80">
+                        Quan sát hoặc tìm hiểu những vấn đề thường gặp tại khu vực cổng trường vào giờ cao điểm: Ùn tắc giao thông, phụ huynh dừng đỗ xe sai quy định, chưa có vạch kẻ qua đường cho học sinh và thiếu hệ thống biển báo cảnh báo.
+                    </div>
                 </div>
 
                 <!-- Bước 2 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 rounded-lg bg-amber-50 text-amber-700 font-bold text-xs uppercase">Bước 2</span>
-                            <span class="text-slate-300 font-extrabold text-xl">02</span>
+                <div class="bg-paper hover:bg-paperLight transition-colors">
+                    <button onclick="toggleStep(2)" class="w-full p-5 sm:px-10 text-left flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <span class="font-mono text-xs font-bold px-2.5 py-1 box-ink bg-paperDark">BƯỚC 02</span>
+                            <span class="font-bold text-base sm:text-lg uppercase">Đề xuất giải pháp quy hoạch</span>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900 mb-2">Đề xuất giải pháp</h3>
-                        <p class="text-sm text-slate-600 mb-4">
-                            Thảo luận nhóm để đưa ra phương án tổ chức khu vực cổng trường an toàn và thuận tiện hơn:
-                        </p>
+                        <span id="step-icon-2" class="font-mono text-lg font-bold">[+]</span>
+                    </button>
+                    <div id="step-detail-2" class="hidden px-5 sm:px-10 pb-5 pt-2 bt-ink bg-paperLight text-sm text-ink/80">
+                        Thảo luận nhóm để tổ chức lại khu vực cổng trường an toàn và thuận tiện hơn: Bố trí khu vực đón học sinh tách biệt, sắp xếp lối đi bộ hợp lý, tăng cường biển báo giao thông và đề xuất thêm các ý tưởng điều tiết sáng tạo.
                     </div>
-                    <ul class="space-y-1.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                        <li>• Bố trí khu vực đón học sinh riêng</li>
-                        <li>• Sắp xếp lối đi bộ hợp lý</li>
-                        <li>• Tăng cường hệ thống biển báo</li>
-                        <li>• Đề xuất thêm ý tưởng sáng tạo khác</li>
-                    </ul>
                 </div>
 
                 <!-- Bước 3 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs uppercase">Bước 3</span>
-                            <span class="text-slate-300 font-extrabold text-xl">03</span>
+                <div class="bg-paper hover:bg-paperLight transition-colors">
+                    <button onclick="toggleStep(3)" class="w-full p-5 sm:px-10 text-left flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <span class="font-mono text-xs font-bold px-2.5 py-1 box-ink bg-paperDark">BƯỚC 03</span>
+                            <span class="font-bold text-base sm:text-lg uppercase">Thiết kế bản vẽ mặt bằng (06 Hạng mục)</span>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900 mb-2">Thiết kế bản vẽ</h3>
-                        <p class="text-sm text-slate-600 mb-4">
-                            Phác thảo bản vẽ thiết kế tổng thể mặt bằng khu vực cổng trường bao gồm đầy đủ các hạng mục:
-                        </p>
+                        <span id="step-icon-3" class="font-mono text-lg font-bold">[+]</span>
+                    </button>
+                    <div id="step-detail-3" class="hidden px-5 sm:px-10 pb-5 pt-2 bt-ink bg-paperLight text-sm text-ink/80">
+                        Vẽ bản thiết kế tổng thể gồm đầy đủ 6 phân khu chức năng: (1) Cổng trường, (2) Đường đi, (3) Vạch qua đường, (4) Khu vực đón học sinh, (5) Hệ thống biển báo, và (6) Khu vực để xe. (Đã được số hóa thành Sa bàn 2D ở Mục 02).
                     </div>
-                    <ul class="space-y-1.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                        <li>• Cổng trường & Đường đi</li>
-                        <li>• Vạch kẻ qua đường cho học sinh</li>
-                        <li>• Khu vực đón học sinh & Khu để xe</li>
-                        <li>• Vị trí đặt biển báo giao thông</li>
-                    </ul>
                 </div>
 
                 <!-- Bước 4 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 rounded-lg bg-sky-50 text-sky-700 font-bold text-xs uppercase">Bước 4</span>
-                            <span class="text-slate-300 font-extrabold text-xl">04</span>
+                <div class="bg-paper hover:bg-paperLight transition-colors">
+                    <button onclick="toggleStep(4)" class="w-full p-5 sm:px-10 text-left flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <span class="font-mono text-xs font-bold px-2.5 py-1 box-ink bg-paperDark">BƯỚC 04</span>
+                            <span class="font-bold text-base sm:text-lg uppercase">Chế tạo mô hình từ vật liệu tái chế</span>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900 mb-2">Chế tạo mô hình</h3>
-                        <p class="text-sm text-slate-600 mb-4">
-                            Tiến hành cắt ghép, tạo hình và lắp ráp mô hình từ các vật liệu thủ công và vật liệu tái chế:
-                        </p>
+                        <span id="step-icon-4" class="font-mono text-lg font-bold">[+]</span>
+                    </button>
+                    <div id="step-detail-4" class="hidden px-5 sm:px-10 pb-5 pt-2 bt-ink bg-paperLight text-sm text-ink/80">
+                        Sử dụng bìa carton, hộp giấy, que kem, que gỗ, giấy màu, vỏ chai nhựa tái chế, keo dán và màu vẽ để lắp ghép và hoàn thiện sa bàn vật lý theo đúng tỷ lệ bản vẽ thiết kế.
                     </div>
-                    <ul class="space-y-1.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                        <li>• Sử dụng bìa carton làm nền và tòa nhà</li>
-                        <li>• Que kem, que gỗ làm hàng rào, cổng</li>
-                        <li>• Giấy màu, vỏ chai nhựa tái chế</li>
-                        <li>• Sơn màu chi tiết đường đi và cây xanh</li>
-                    </ul>
                 </div>
 
                 <!-- Bước 5 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 rounded-lg bg-purple-50 text-purple-700 font-bold text-xs uppercase">Bước 5</span>
-                            <span class="text-slate-300 font-extrabold text-xl">05</span>
+                <div class="bg-paper hover:bg-paperLight transition-colors">
+                    <button onclick="toggleStep(5)" class="w-full p-5 sm:px-10 text-left flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <span class="font-mono text-xs font-bold px-2.5 py-1 box-ink bg-paperDark">BƯỚC 05</span>
+                            <span class="font-bold text-base sm:text-lg uppercase">Tích hợp công nghệ &amp; Hệ thống quy tắc an toàn</span>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900 mb-2">Tích hợp công nghệ</h3>
-                        <p class="text-sm text-slate-600 mb-4">
-                            Đưa yếu tố công nghệ vào mô hình để nâng cao tính tuyên truyền và trực quan:
-                        </p>
+                        <span id="step-icon-5" class="font-mono text-lg font-bold">[+]</span>
+                    </button>
+                    <div id="step-detail-5" class="hidden px-5 sm:px-10 pb-5 pt-2 bt-ink bg-paperLight text-sm text-ink/80">
+                        Xây dựng bộ “Những quy tắc cần thực hiện để ra vào cổng trường an toàn” kết hợp lắp đặt mạch đèn LED tín hiệu giao thông (Đỏ - Vàng - Xanh) hoặc các yếu tố tương tác trực quan trên mô hình.
                     </div>
-                    <ul class="space-y-1.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                        <li>• Gắn Mã QR tra cứu quy tắc an toàn</li>
-                        <li>• Lắp đặt hệ thống đèn LED giao thông</li>
-                        <li>• Bổ sung các yếu tố tương tác trực tiếp</li>
-                    </ul>
                 </div>
 
                 <!-- Bước 6 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 rounded-lg bg-rose-50 text-rose-700 font-bold text-xs uppercase">Bước 6</span>
-                            <span class="text-slate-300 font-extrabold text-xl">06</span>
+                <div class="bg-paper hover:bg-paperLight transition-colors">
+                    <button onclick="toggleStep(6)" class="w-full p-5 sm:px-10 text-left flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <span class="font-mono text-xs font-bold px-2.5 py-1 box-ink bg-paperDark">BƯỚC 06</span>
+                            <span class="font-bold text-base sm:text-lg uppercase">Thử nghiệm, nhận góp ý &amp; Hoàn thiện</span>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-900 mb-2">Thử nghiệm & Hoàn thiện</h3>
-                        <p class="text-sm text-slate-600 mb-4">
-                            Đánh giá hiệu quả thực tế của mô hình và lắng nghe phản hồi để tối ưu sản phẩm:
-                        </p>
+                        <span id="step-icon-6" class="font-mono text-lg font-bold">[+]</span>
+                    </button>
+                    <div id="step-detail-6" class="hidden px-5 sm:px-10 pb-5 pt-2 bt-ink bg-paperLight text-sm text-ink/80">
+                        Cho các nhóm khác quan sát và trải nghiệm vận hành mô hình → Tiếp nhận ý kiến đóng góp → Điều chỉnh những điểm chưa hợp lý về luồng giao thông → Hoàn thiện sản phẩm cuối cùng.
                     </div>
-                    <ul class="space-y-1.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                        <li>• Mời các nhóm khác quan sát, trải nghiệm</li>
-                        <li>• Tiếp nhận góp ý về luồng di chuyển</li>
-                        <li>• Điều chỉnh những điểm chưa hợp lý</li>
-                        <li>• Hoàn thiện sản phẩm cuối cùng</li>
-                    </ul>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== VẬT LIỆU CHẾ TẠO ==================== -->
-    <section id="vat-lieu" class="py-14 bg-white border-t border-slate-200">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-2">
-                <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Thân thiện & Tiết kiệm</span>
-                    <h2 class="text-2xl font-bold text-slate-900 mt-1">Vật Liệu Sử Dụng Trong Mô Hình</h2>
-                </div>
-                <span class="text-xs font-medium text-slate-500">Ưu tiên tái sử dụng vật liệu sẵn có</span>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
-                    <div class="text-2xl mb-2">📦</div>
-                    <div class="text-xs font-bold text-slate-800">Carton, hộp giấy</div>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
-                    <div class="text-2xl mb-2">🪵</div>
-                    <div class="text-xs font-bold text-slate-800">Que kem, que gỗ</div>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
-                    <div class="text-2xl mb-2">🎨</div>
-                    <div class="text-xs font-bold text-slate-800">Giấy màu</div>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
-                    <div class="text-2xl mb-2">♻️</div>
-                    <div class="text-xs font-bold text-slate-800">Chai nhựa (tái chế)</div>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
-                    <div class="text-2xl mb-2">✂️</div>
-                    <div class="text-xs font-bold text-slate-800">Keo dán, băng dính</div>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-center">
-                    <div class="text-2xl mb-2">🖌️</div>
-                    <div class="text-xs font-bold text-slate-800">Màu vẽ</div>
-                </div>
-                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center col-span-2 sm:col-span-1">
-                    <div class="text-2xl mb-2">💡</div>
-                    <div class="text-xs font-bold text-emerald-900">Đèn LED giao thông</div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== KHU VỰC MÃ QR & QUY TẮC AN TOÀN ==================== -->
-    <section id="ma-qr" class="py-16 bg-slate-100 border-t border-slate-200">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-10 shadow-sm">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    
-                    <!-- Nội dung quy tắc khi quét QR -->
-                    <div class="lg:col-span-8 space-y-4">
-                        <span class="inline-block px-3 py-1 rounded-md bg-purple-100 text-purple-800 text-xs font-bold uppercase tracking-wider">
-                            Bước 5: Tích hợp công nghệ
+        <!-- ==================== MỤC 04 (NÂNG CẤP #3): BẢNG QUY TẮC RA VÀO CỔNG TRƯỜNG AN TOÀN (TAB PHÂN VAI) ==================== -->
+        <section id="bang-quy-tac" class="bb-ink scroll-mt-14">
+            <div class="p-4 sm:px-10 bg-ink text-paper flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="font-mono text-xs px-2 py-0.5 bg-sigGreen text-paper font-bold">MỤC 04 • CẨM NANG TƯƠNG TÁC</span>
+                    <h2 class="font-mono text-sm sm:text-base font-bold uppercase tracking-wider">
+                        NHỮNG QUY TẮC CẦN THỰC HIỆN ĐỂ RA VÀO CỔNG TRƯỜNG AN TOÀN (BƯỚC 5)
+                    </h2>
+                </div>
+                <span id="rules-commit-counter" class="font-mono text-xs text-sigYellow font-bold">
+                    ĐÃ CAM KẾT THỰC HIỆN: 14 / 14 QUY TẮC
+                </span>
+            </div>
+
+            <!-- Thanh Tab Chuyển Đổi 3 Nhóm Đối Tượng (Học sinh | Phụ huynh | Điều tiết chung) -->
+            <div class="p-4 sm:px-10 bg-paperDark bb-ink flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-grow">
+                    <button onclick="switchRuleTab('student')" id="tab-btn-student" class="px-4 py-3 box-ink bg-ink text-paper font-mono text-xs font-bold uppercase text-left flex items-center justify-between">
+                        <span>[A] DÀNH CHO HỌC SINH</span>
+                        <span class="px-1.5 py-0.5 bg-sigYellow text-ink text-[10px]">05 QUY TẮC</span>
+                    </button>
+                    <button onclick="switchRuleTab('parent')" id="tab-btn-parent" class="px-4 py-3 box-ink bg-paper text-ink font-mono text-xs font-bold uppercase text-left flex items-center justify-between hover:bg-paperLight">
+                        <span>[B] DÀNH CHO PHỤ HUYNH</span>
+                        <span class="px-1.5 py-0.5 bg-paperDark text-ink text-[10px]">05 QUY TẮC</span>
+                    </button>
+                    <button onclick="switchRuleTab('school')" id="tab-btn-school" class="px-4 py-3 box-ink bg-paper text-ink font-mono text-xs font-bold uppercase text-left flex items-center justify-between hover:bg-paperLight">
+                        <span>[C] ĐIỀU TIẾT &amp; PHỐI HỢP</span>
+                        <span class="px-1.5 py-0.5 bg-paperDark text-ink text-[10px]">04 QUY TẮC</span>
+                    </button>
+                </div>
+
+                <div class="shrink-0 flex items-center">
+                    <span class="font-mono text-[11px] text-ink/70">
+                        Bấm vào từng thẻ quy tắc để xác nhận cam kết thực hiện.
+                    </span>
+                </div>
+            </div>
+
+            <!-- Nội dung Danh sách Thẻ Quy Tắc (Render động theo Tab) -->
+            <div class="p-6 sm:p-10 bg-paper">
+                <div id="rules-grid-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Được khởi tạo bằng JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== MỤC 05: ĐỊNH MỨC VẬT LIỆU (BOM) & PHIẾU NGHIỆM THU MÔ HÌNH ==================== -->
+        <section id="nghiem-thu" class="bb-ink scroll-mt-14">
+            <div class="p-4 sm:px-10 bg-ink text-paper flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="font-mono text-xs px-2 py-0.5 bg-sigYellow text-ink font-bold">MỤC 05</span>
+                    <h2 class="font-mono text-sm sm:text-base font-bold uppercase tracking-wider">
+                        VẬT LIỆU GỢI Ý &amp; BẢNG NGHIỆM THU SẢN PHẨM CẦN HOÀN THÀNH
+                    </h2>
+                </div>
+                <span class="font-mono text-xs text-paper/70">TIÊU CHUẨN ĐÁNH GIÁ 01 MÔ HÌNH HOÀN CHỈNH</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12">
+
+                <!-- CỘT TRÁI (5/12): VẬT LIỆU GỢI Ý (BẢNG BOM) -->
+                <div class="lg:col-span-5 p-6 sm:p-8 bb-ink lg:border-b-0 lg:br-ink bg-paper">
+                    <div class="flex items-center justify-between pb-3 mb-4 bb-ink">
+                        <span class="font-mono text-xs font-bold uppercase text-ink">
+                            DANH MỤC 06 NHÓM VẬT LIỆU GỢI Ý
                         </span>
-                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">
-                            Những Quy Tắc Cần Thực Hiện Để Ra Vào Cổng Trường An Toàn
-                        </h2>
-                        <p class="text-sm text-slate-600">
-                            Khi quét Mã QR gắn trên mô hình (hoặc bên phải màn hình), học sinh và phụ huynh có thể xem ngay bảng hướng dẫn quy tắc văn hóa giao thông tại cổng trường:
-                        </p>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-sm">
-                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                                <strong class="text-slate-900 block mb-1">1. Đỗ xe đúng khu vực quy định</strong>
-                                <span class="text-xs text-slate-600">Phụ huynh dừng xe gọn gàng tại "Khu vực đón học sinh", không dừng xe dưới lòng đường trước cổng chính.</span>
-                            </div>
-                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                                <strong class="text-slate-900 block mb-1">2. Sang đường đúng vạch kẻ</strong>
-                                <span class="text-xs text-slate-600">Học sinh đi bộ trên vỉa hè, chỉ sang đường tại vạch kẻ trắng và tuân thủ tín hiệu đèn giao thông.</span>
-                            </div>
-                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                                <strong class="text-slate-900 block mb-1">3. Xếp hàng trật tự khi ra về</strong>
-                                <span class="text-xs text-slate-600">Không xô đẩy, tụ tập hay đùa giỡn ngay trước cổng trường gây cản trở luồng di chuyển.</span>
-                            </div>
-                            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                                <strong class="text-slate-900 block mb-1">4. Đội mũ bảo hiểm đạt chuẩn</strong>
-                                <span class="text-xs text-slate-600">100% học sinh ngồi trên xe máy, xe đạp điện phải cài quai mũ bảo hiểm đúng quy cách.</span>
-                            </div>
-                        </div>
+                        <span class="font-mono text-[11px] text-sigGreen font-bold">ƯU TIÊN TÁI CHẾ</span>
                     </div>
 
-                    <!-- Khung chèn ảnh Mã QR của nhóm bạn -->
-                    <div class="lg:col-span-4 flex flex-col items-center">
-                        <div class="w-full max-w-[260px] bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center">
-                            <div class="image-slot-container relative aspect-square w-full rounded-xl overflow-hidden bg-white border-2 border-dashed border-slate-300 flex items-center justify-center">
-                                
-                                <!-- ========================================================================= -->
-                                <!-- VỊ TRÍ 6: CHÈN LINK ẢNH MÃ QR CỦA NHÓM BẠN VÀO GIỮA src="" BÊN DƯỚI       -->
-                                <!-- ========================================================================= -->
-                                <img src="" alt="Mã QR Hướng dẫn quy tắc an toàn cổng trường" />
+                    <div class="divide-y-[1.5px] divide-[#161616] box-ink bg-paperLight text-xs sm:text-sm">
+                        <div class="p-3.5 flex items-start justify-between gap-3">
+                            <div>
+                                <strong class="font-mono uppercase block text-ink">1. Carton, hộp giấy</strong>
+                                <span class="text-xs text-ink/70">Làm nền sa bàn, mặt đường, khối nhà trường THCS và trụ cổng.</span>
+                            </div>
+                            <span class="font-mono text-[11px] px-2 py-0.5 box-ink bg-paper shrink-0">KẾT CẤU CHÍNH</span>
+                        </div>
 
-                                <div class="placeholder-guide p-4 text-center">
-                                    <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-2 font-mono font-bold text-xs">
-                                        QR
+                        <div class="p-3.5 flex items-start justify-between gap-3">
+                            <div>
+                                <strong class="font-mono uppercase block text-ink">2. Que kem, que gỗ</strong>
+                                <span class="text-xs text-ink/70">Chế tạo hàng rào trường học, cột biển báo, thanh chắn phân làn.</span>
+                            </div>
+                            <span class="font-mono text-[11px] px-2 py-0.5 box-ink bg-paper shrink-0">HÀNG RÀO &amp; TRỤ</span>
+                        </div>
+
+                        <div class="p-3.5 flex items-start justify-between gap-3">
+                            <div>
+                                <strong class="font-mono uppercase block text-ink">3. Giấy màu các loại</strong>
+                                <span class="text-xs text-ink/70">Cắt dán vạch qua đường trắng, mặt biển báo giao thông, bảng chỉ dẫn.</span>
+                            </div>
+                            <span class="font-mono text-[11px] px-2 py-0.5 box-ink bg-paper shrink-0">VẠCH KẺ &amp; BIỂN</span>
+                        </div>
+
+                        <div class="p-3.5 flex items-start justify-between gap-3">
+                            <div>
+                                <strong class="font-mono uppercase block text-ink">4. Chai nhựa (tái chế)</strong>
+                                <span class="text-xs text-ink/70">Tạo bồn cây xanh, mái vòm nhà xe học sinh hoặc cọc tiêu giao thông.</span>
+                            </div>
+                            <span class="font-mono text-[11px] px-2 py-0.5 box-ink bg-paper shrink-0">VẬT LIỆU XANH</span>
+                        </div>
+
+                        <div class="p-3.5 flex items-start justify-between gap-3">
+                            <div>
+                                <strong class="font-mono uppercase block text-ink">5. Keo dán, băng dính &amp; Màu vẽ</strong>
+                                <span class="text-xs text-ink/70">Cố định chi tiết mô hình, sơn màu mặt đường nhựa và vỉa hè.</span>
+                            </div>
+                            <span class="font-mono text-[11px] px-2 py-0.5 box-ink bg-paper shrink-0">LIÊN KẾT &amp; SƠN</span>
+                        </div>
+
+                        <div class="p-3.5 flex items-start justify-between gap-3">
+                            <div>
+                                <strong class="font-mono uppercase block text-ink">6. Đèn LED tín hiệu</strong>
+                                <span class="text-xs text-ink/70">Lắp đặt cột đèn giao thông hoặc đèn chiếu sáng tăng tính tương tác.</span>
+                            </div>
+                            <span class="font-mono text-[11px] px-2 py-0.5 box-ink bg-sigYellow/30 shrink-0 font-bold">TƯƠNG TÁC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CỘT PHẢI (7/12): PHIẾU NGHIỆM THU 01 MÔ HÌNH "CỔNG TRƯỜNG AN TOÀN" -->
+                <div class="lg:col-span-7 bg-paperLight flex flex-col justify-between">
+                    <div>
+                        <!-- Thanh tiến độ nghiệm thu -->
+                        <div class="px-6 sm:px-10 py-4 bb-ink bg-paper">
+                            <div class="flex items-center justify-between font-mono text-xs mb-2">
+                                <span class="text-ink/70">Bấm vào từng tiêu chí bên dưới để đánh dấu nghiệm thu [X]:</span>
+                                <span id="checklist-counter" class="font-bold text-sigGreen">ĐẠT: 04 / 04 TIÊU CHUẨN (100%)</span>
+                            </div>
+                            <div class="w-full h-2.5 box-ink bg-paperDark overflow-hidden">
+                                <div id="checklist-progress-bar" class="h-full bg-sigGreen transition-all duration-300" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- 4 Dòng Checklist tương tác -->
+                        <div class="divide-y-[1.5px] divide-[#161616]" id="acceptance-list">
+
+                            <!-- Tiêu chuẩn 1 -->
+                            <div onclick="toggleCriteria(0)" class="criteria-item p-5 sm:px-10 cursor-pointer hover:bg-paperDark/40 transition-colors flex items-start gap-4">
+                                <div id="check-box-0" class="w-8 h-8 box-ink bg-sigGreen text-paper font-mono font-bold text-base flex items-center justify-center shrink-0 mt-0.5 select-none">
+                                    [X]
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-mono text-xs font-bold uppercase tracking-wider text-ink/60">TIÊU CHUẨN #01</span>
+                                        <span id="check-status-0" class="font-mono text-xs font-bold text-sigGreen">ĐÃ HOÀN THÀNH</span>
                                     </div>
-                                    <p class="text-xs font-semibold text-slate-700">Khung chèn ảnh Mã QR</p>
-                                    <p class="text-[11px] text-slate-400 mt-1">Dán link ảnh QR vào <code class="text-emerald-600 font-mono">src=""</code> ở Vị trí 6</p>
+                                    <h3 class="text-base sm:text-lg font-bold mt-1">
+                                        1. Có cổng trường và đường giao thông.
+                                    </h3>
+                                    <p class="text-xs sm:text-sm text-ink/70 mt-1">
+                                        Thể hiện rõ kiến trúc cổng trường THCS, tường rào, vỉa hè hai bên và lòng đường lưu thông thông suốt.
+                                    </p>
                                 </div>
                             </div>
-                            <p class="text-xs font-semibold text-slate-800 mt-3">Quét mã QR để xem hướng dẫn</p>
-                            <p class="text-[11px] text-slate-500 mt-0.5">Tích hợp trực tiếp trên mô hình</p>
+
+                            <!-- Tiêu chuẩn 2 -->
+                            <div onclick="toggleCriteria(1)" class="criteria-item p-5 sm:px-10 cursor-pointer hover:bg-paperDark/40 transition-colors flex items-start gap-4">
+                                <div id="check-box-1" class="w-8 h-8 box-ink bg-sigGreen text-paper font-mono font-bold text-base flex items-center justify-center shrink-0 mt-0.5 select-none">
+                                    [X]
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-mono text-xs font-bold uppercase tracking-wider text-ink/60">TIÊU CHUẨN #02</span>
+                                        <span id="check-status-1" class="font-mono text-xs font-bold text-sigGreen">ĐÃ HOÀN THÀNH</span>
+                                    </div>
+                                    <h3 class="text-base sm:text-lg font-bold mt-1">
+                                        2. Có vạch qua đường, biển báo và khu vực đón học sinh.
+                                    </h3>
+                                    <p class="text-xs sm:text-sm text-ink/70 mt-1">
+                                        Bố trí đầy đủ vạch sơn trắng cho người đi bộ, biển báo giao thông chuẩn quy cách và phân khu dừng đỗ xe dành riêng cho phụ huynh.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Tiêu chuẩn 3 -->
+                            <div onclick="toggleCriteria(2)" class="criteria-item p-5 sm:px-10 cursor-pointer hover:bg-paperDark/40 transition-colors flex items-start gap-4">
+                                <div id="check-box-2" class="w-8 h-8 box-ink bg-sigGreen text-paper font-mono font-bold text-base flex items-center justify-center shrink-0 mt-0.5 select-none">
+                                    [X]
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-mono text-xs font-bold uppercase tracking-wider text-ink/60">TIÊU CHUẨN #03</span>
+                                        <span id="check-status-2" class="font-mono text-xs font-bold text-sigGreen">ĐÃ HOÀN THÀNH</span>
+                                    </div>
+                                    <h3 class="text-base sm:text-lg font-bold mt-1">
+                                        3. Có bảng hướng dẫn các quy tắc an toàn tại cổng trường.
+                                    </h3>
+                                    <p class="text-xs sm:text-sm text-ink/70 mt-1">
+                                        Trình bày trực quan bộ quy tắc cần thực hiện để ra vào cổng trường an toàn cho học sinh và phụ huynh (Mục 04).
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Tiêu chuẩn 4 -->
+                            <div onclick="toggleCriteria(3)" class="criteria-item p-5 sm:px-10 cursor-pointer hover:bg-paperDark/40 transition-colors flex items-start gap-4">
+                                <div id="check-box-3" class="w-8 h-8 box-ink bg-sigGreen text-paper font-mono font-bold text-base flex items-center justify-center shrink-0 mt-0.5 select-none">
+                                    [X]
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-mono text-xs font-bold uppercase tracking-wider text-ink/60">TIÊU CHUẨN #04</span>
+                                        <span id="check-status-3" class="font-mono text-xs font-bold text-sigGreen">ĐÃ HOÀN THÀNH</span>
+                                    </div>
+                                    <h3 class="text-base sm:text-lg font-bold mt-1">
+                                        4. Khuyến khích có đèn LED giao thông hoặc một yếu tố tương tác.
+                                    </h3>
+                                    <p class="text-xs sm:text-sm text-ink/70 mt-1">
+                                        Tích hợp đèn LED giao thông hoạt động thực tế hoặc cơ cấu phân làn tương tác giúp nâng cao tính sinh động khi thuyết trình.
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Con dấu xác nhận nghiệm thu cuối cột phải -->
+                    <div class="p-6 sm:px-10 bt-ink bg-paperDark/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <span class="font-mono text-[11px] uppercase tracking-widest text-ink/60 block">ĐÁNH GIÁ MỨC ĐỘ HOÀN THIỆN SẢN PHẨM</span>
+                            <span id="final-stamp-desc" class="text-sm font-bold text-ink">Đủ điều kiện trưng bày &amp; thuyết trình cấp Trường THCS</span>
+                        </div>
+                        <div id="final-stamp-badge" class="px-4 py-2 box-ink bg-sigGreen text-paper font-mono text-xs font-bold uppercase tracking-widest text-center">
+                            [ ĐẠT CHUẨN HOÀN THÀNH 100% ]
                         </div>
                     </div>
 
                 </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- ==================== CHÂN TRANG (FOOTER) ==================== -->
-    <footer class="bg-slate-900 text-white py-10">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <div>
-                <p class="text-lg font-bold text-amber-400">
-                    “Cổng trường an toàn – Trách nhiệm của mỗi chúng ta!”
-                </p>
-                <p class="text-xs text-slate-400 mt-1">
-                    Dự án STEM – Hành động vì cộng đồng | Mô hình Cổng Trường An Toàn
-                </p>
             </div>
-            <a href="#" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors">
-                ↑ Lên đầu trang
-            </a>
-        </div>
-    </footer>
+        </section>
 
+        <!-- ==================== CHÂN TRANG (FOOTER) ==================== -->
+        <footer>
+            <div class="h-6 w-full hazard-stripe bb-ink"></div>
+
+            <div class="p-8 sm:p-12 lg:p-16 bg-ink text-paper">
+                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                    <div>
+                        <span class="font-mono text-xs uppercase tracking-widest text-sigYellow block mb-3">
+                            THÔNG ĐIỆP HÀNH ĐỘNG VÌ CỘNG ĐỒNG
+                        </span>
+                        <h2 class="text-3xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight leading-[1.05]">
+                            CỔNG TRƯỜNG AN TOÀN –<br/>
+                            <span class="text-sigYellow">TRÁCH NHIỆM CỦA MỖI CHÚNG TA!</span>
+                        </h2>
+                    </div>
+
+                    <div class="font-mono text-xs text-paper/70 space-y-1.5 lg:text-right shrink-0">
+                        <div>CHƯƠNG TRÌNH: <span class="text-paper font-bold">STEM – HÀNH ĐỘNG VÌ CỘNG ĐỒNG</span></div>
+                        <div>TÊN DỰ ÁN: <span class="text-sigYellow font-bold">MÔ HÌNH "CỔNG TRƯỜNG AN TOÀN" (TRƯỜNG THCS)</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-4 w-full hazard-stripe bt-ink"></div>
+        </footer>
+
+    </div>
+
+    <!-- ==================== JAVASCRIPT XỬ LÝ TOÀN BỘ TƯƠNG TÁC ==================== -->
+    <script>
+        // --- DỮ LIỆU CHI TIẾT 06 PHÂN KHU TRÊN SA BÀN 2D (NÂNG CẤP #1) ---
+        const zoneData = {
+            1: {
+                badge: 'HẠNG MỤC #01 / 06',
+                title: '01. CỔNG TRƯỜNG THCS',
+                role: 'Cổng chính kết nối khuôn viên trường học với trục đường giao thông phía trước, được thiết kế lùi sâu tạo khoảng đệm vỉa hè rộng rãi giúp học sinh không tràn trực tiếp xuống lòng đường.',
+                material: 'Bìa carton cứng tạo khối trụ cổng, que kem gỗ làm hàng rào và giấy màu trang trí bảng tên "TRƯỜNG THCS".',
+                before: 'Học sinh và xe phụ huynh dồn ứ ngay sát mép cổng, không có ranh giới phân tách luồng đi bộ.',
+                after: 'Mở rộng hành lang đi bộ trước cổng, kết nối trực tiếp với vạch qua đường và tách riêng cổng phụ vào khu để xe.'
+            },
+            2: {
+                badge: 'HẠNG MỤC #02 / 06',
+                title: '02. ĐƯỜNG GIAO THÔNG 2 LÀN',
+                role: 'Trục đường chính phía trước cổng trường được kẻ vạch phân chia 2 làn xe chạy ngược chiều rõ ràng, kết hợp vạch dừng sơn trắng (Stop line) trước khu vực vạch qua đường.',
+                material: 'Tấm bìa carton phẳng sơn màu xám nhựa đường, dán giấy đề-can trắng làm tim đường nét đứt và vạch dừng.',
+                before: 'Phương tiện đi lại hỗn loạn cả 2 chiều, quay đầu xe ngay giữa cổng gây ùn tắc dây chuyền.',
+                after: 'Hai làn xe lưu thông trật tự, dừng đúng vạch khi đèn đỏ và không bị xe đỗ đón con lấn chiếm lòng đường.'
+            },
+            3: {
+                badge: 'HẠNG MỤC #03 / 06',
+                title: '03. VẠCH QUA ĐƯỜNG (ZEBRA)',
+                role: 'Hành lang ưu tiên tuyệt đối cho học sinh đi bộ sang đường, nối thẳng từ cổng chính Trường THCS sang vỉa hè đối diện và Khu vực đón học sinh.',
+                material: 'Giấy màu trắng cắt thành các dải song song kích thước đều nhau dán nổi bật trên nền đường nhựa.',
+                before: 'Chưa có vạch qua đường; học sinh phải băng cắt chéo nguy hiểm qua đầu xe máy và ô tô.',
+                after: 'Học sinh tập trung đi đúng trên vạch sơn trắng khi đèn tín hiệu cho phép, triệt tiêu hoàn toàn điểm mù giao thông.'
+            },
+            4: {
+                badge: 'HẠNG MỤC #04 / 06',
+                title: '04. KHU VỰC ĐÓN HỌC SINH',
+                role: 'Phân khu dừng đỗ xe dành riêng cho phụ huynh chờ đón con (vịnh đỗ xe lệch khỏi lòng đường chính), giúp xe dừng đón không làm cản trở dòng phương tiện đang đi thẳng.',
+                material: 'Giấy màu xanh lá nhạt lót nền phân khu, que gỗ làm dải phân cách mềm và bảng hiệu "KHU VỰC ĐÓN HỌC SINH".',
+                before: 'Phụ huynh dừng xe tự phát thành 2-3 hàng dưới lòng đường ngay trước mặt cổng chính.',
+                after: 'Phụ huynh xếp xe gọn gàng theo từng ô quy định trong vịnh đón, di chuyển vào - ra theo luồng 1 chiều.'
+            },
+            5: {
+                badge: 'HẠNG MỤC #05 / 06',
+                title: '05. BIỂN BÁO & ĐÈN LED TÍN HIỆU',
+                role: 'Hệ thống cảnh báo sớm và điều tiết luồng giao thông bằng ánh sáng (Đỏ - Vàng - Xanh), giúp người tham gia giao thông chủ động giảm tốc độ và nhường đường cho học sinh.',
+                material: 'Bóng đèn LED 3 màu (Đỏ, Vàng, Xanh) nối pin + công tắc, que gỗ làm cột đèn và giấy màu cắt hình biển báo.',
+                before: 'Thiếu biển cảnh báo trường học và không có đèn tín hiệu điều tiết giờ cao điểm.',
+                after: 'Đầy đủ biển cảnh báo trẻ em qua đường, biển chỉ dẫn vịnh đón và cột đèn LED 3 pha hoạt động trực quan.'
+            },
+            6: {
+                badge: 'HẠNG MỤC #06 / 06',
+                title: '06. KHU VỰC ĐỂ XE HỌC SINH',
+                role: 'Sân tập kết xe đạp và xe đạp điện nằm gọn bên trong khuôn viên trường với lối dẫn riêng, tách biệt hoàn toàn với luồng học sinh đi bộ ở cổng chính.',
+                material: 'Hộp giấy và vỏ chai nhựa tái chế cắt tạo hình mái che nhà xe, kẻ ô phân làn bằng bút dạ trắng.',
+                before: 'Học sinh dắt xe đạp chen lẫn với đám đông phụ huynh dừng chờ ngay trước cổng chính.',
+                after: 'Phương tiện của học sinh được phân luồng đi vào khu để xe nội khu ngăn nắp, an toàn.'
+            }
+        };
+
+        let currentMode = 'after'; // 'after' | 'before'
+        let currentLight = 'red';  // 'red' | 'yellow' | 'green'
+        let currentZone = 1;
+
+        // 1. Chuyển đổi chế độ Trước / Sau Quy Hoạch (Nâng cấp #2)
+        function setSimulationMode(mode) {
+            currentMode = mode;
+            const btnBefore = document.getElementById('btn-mode-before');
+            const btnAfter = document.getElementById('btn-mode-after');
+            const layerBefore = document.getElementById('layer-before-planning');
+            const layerAfter = document.getElementById('layer-after-planning');
+            const modeBadge = document.getElementById('blueprint-mode-badge');
+            const flowDesc = document.getElementById('blueprint-flow-desc');
+
+            // Các ô chỉ số Telemetry
+            const mConflict = document.getElementById('metric-conflict');
+            const mParking = document.getElementById('metric-parking');
+            const mCrossing = document.getElementById('metric-crossing');
+            const mSignal = document.getElementById('metric-signal');
+
+            if (mode === 'before') {
+                btnBefore.className = 'px-3.5 py-2 font-mono text-xs font-bold uppercase transition-colors bg-sigOrange text-paper';
+                btnAfter.className = 'px-3.5 py-2 font-mono text-xs font-bold uppercase transition-colors text-ink hover:bg-paperDark';
+
+                layerBefore.classList.remove('hidden');
+                layerAfter.classList.add('hidden');
+
+                modeBadge.textContent = 'MẶT BẰNG: HIỆN TRẠNG CHƯA QUY HOẠCH';
+                modeBadge.className = 'px-2 py-0.5 bg-sigOrange text-paper font-bold uppercase';
+                flowDesc.textContent = 'Cảnh báo: Phụ huynh đỗ xe tràn lòng đường, học sinh băng cắt nguy hiểm!';
+
+                mConflict.textContent = '04 ĐIỂM (NGUY HIỂM)';
+                mConflict.className = 'font-bold text-sigOrange';
+                mParking.textContent = 'ĐỖ TRÀN LÒNG ĐƯỜNG';
+                mParking.className = 'font-bold text-sigOrange';
+                mCrossing.textContent = 'CHƯA CÓ VẠCH KẺ';
+                mCrossing.className = 'font-bold text-sigOrange';
+                mSignal.textContent = 'THIẾU BIỂN & ĐÈN';
+                mSignal.className = 'font-bold text-sigOrange';
+            } else {
+                btnAfter.className = 'px-3.5 py-2 font-mono text-xs font-bold uppercase transition-colors bg-sigGreen text-paper';
+                btnBefore.className = 'px-3.5 py-2 font-mono text-xs font-bold uppercase transition-colors text-ink hover:bg-paperDark';
+
+                layerBefore.classList.add('hidden');
+                layerAfter.classList.remove('hidden');
+
+                modeBadge.textContent = 'MẶT BẰNG: ĐÃ QUY HOẠCH AN TOÀN';
+                modeBadge.className = 'px-2 py-0.5 bg-sigGreen text-paper font-bold uppercase';
+
+                mConflict.textContent = '0 ĐIỂM (AN TOÀN)';
+                mConflict.className = 'font-bold text-sigGreen';
+                mParking.textContent = 'ĐÚNG VỊNH ĐÓN';
+                mParking.className = 'font-bold text-sigGreen';
+                mCrossing.textContent = 'CÓ VẠCH ZEBRA';
+                mCrossing.className = 'font-bold text-sigGreen';
+                mSignal.textContent = 'ĐÈN LED + BIỂN BÁO';
+                mSignal.className = 'font-bold text-sigGreen';
+
+                // Đồng bộ lại hiển thị đèn giao thông trên bản vẽ
+                setTrafficLight(currentLight);
+            }
+        }
+
+        // 2. Điều khiển Cụm Đèn Tín Hiệu Giao Thông (Đồng bộ Header + Sa bàn SVG)
+        function setTrafficLight(color) {
+            currentLight = color;
+
+            // Nếu đang ở chế độ Trước quy hoạch mà bấm đèn thì tự chuyển sang chế độ Sau quy hoạch để xem hiệu ứng
+            if (currentMode === 'before') {
+                setSimulationMode('after');
+            }
+
+            // Đèn trên Header
+            const redLamp = document.getElementById('lamp-red');
+            const yellowLamp = document.getElementById('lamp-yellow');
+            const greenLamp = document.getElementById('lamp-green');
+            const statusText = document.getElementById('traffic-status-text');
+
+            // Nút đèn trên thanh công cụ Sa bàn
+            const simBtnRed = document.getElementById('sim-btn-red');
+            const simBtnYellow = document.getElementById('sim-btn-yellow');
+            const simBtnGreen = document.getElementById('sim-btn-green');
+
+            // Đèn LED bên trong bản vẽ SVG
+            const svgLedRed = document.getElementById('svg-led-red');
+            const svgLedYellow = document.getElementById('svg-led-yellow');
+            const svgLedGreen = document.getElementById('svg-led-green');
+
+            // Các luồng chuyển động trong SVG
+            const pedFlow = document.getElementById('svg-pedestrian-flow');
+            const vehStopped = document.getElementById('svg-vehicle-stopped');
+            const vehMoving = document.getElementById('svg-vehicle-moving');
+            const flowDesc = document.getElementById('blueprint-flow-desc');
+
+            // Reset classes
+            redLamp.classList.remove('active-red');
+            yellowLamp.classList.remove('active-yellow');
+            greenLamp.classList.remove('active-green');
+
+            simBtnRed.className = 'px-3 py-1.5 box-ink font-mono text-xs font-bold uppercase bg-paper text-ink hover:bg-paperLight';
+            simBtnYellow.className = 'px-3 py-1.5 box-ink font-mono text-xs font-bold uppercase bg-paper text-ink hover:bg-paperLight';
+            simBtnGreen.className = 'px-3 py-1.5 box-ink font-mono text-xs font-bold uppercase bg-paper text-ink hover:bg-paperLight';
+
+            svgLedRed.setAttribute('fill', '#444444');
+            svgLedYellow.setAttribute('fill', '#444444');
+            svgLedGreen.setAttribute('fill', '#444444');
+
+            if (color === 'red') {
+                redLamp.classList.add('active-red');
+                simBtnRed.className = 'px-3 py-1.5 box-ink font-mono text-xs font-bold uppercase bg-sigOrange text-paper';
+                svgLedRed.setAttribute('fill', '#D9381E');
+
+                statusText.textContent = '[ĐÈN ĐỎ] — XE DỪNG LẠI, NHƯỜNG HỌC SINH QUA ĐƯỜNG';
+                statusText.className = 'font-mono text-xs font-bold uppercase text-sigOrange mt-0.5 block';
+                flowDesc.textContent = 'Đèn Đỏ cho xe — Các phương tiện dừng trước vạch trắng, học sinh qua vạch Zebra an toàn.';
+
+                pedFlow.classList.remove('hidden');
+                vehStopped.classList.remove('hidden');
+                vehMoving.classList.add('hidden');
+            } else if (color === 'yellow') {
+                yellowLamp.classList.add('active-yellow');
+                simBtnYellow.className = 'px-3 py-1.5 box-ink font-mono text-xs font-bold uppercase bg-sigYellow text-paper';
+                svgLedYellow.setAttribute('fill', '#EAB308');
+
+                statusText.textContent = '[ĐÈN VÀNG] — QUAN SÁT & GIẢM TỐC ĐỘ KHI QUA CỔNG TRƯỜNG';
+                statusText.className = 'font-mono text-xs font-bold uppercase text-amber-700 mt-0.5 block';
+                flowDesc.textContent = 'Đèn Vàng cảnh báo — Các phương tiện giảm tốc độ, học sinh dừng chờ trên vỉa hè.';
+
+                pedFlow.classList.add('hidden');
+                vehStopped.classList.remove('hidden');
+                vehMoving.classList.add('hidden');
+            } else {
+                greenLamp.classList.add('active-green');
+                simBtnGreen.className = 'px-3 py-1.5 box-ink font-mono text-xs font-bold uppercase bg-sigGreen text-paper';
+                svgLedGreen.setAttribute('fill', '#1B7A43');
+
+                statusText.textContent = '[ĐÈN XANH] — XE LƯU THÔNG TRẬT TỰ & RẼ VÀO VỊNH ĐÓN';
+                statusText.className = 'font-mono text-xs font-bold uppercase text-sigGreen mt-0.5 block';
+                flowDesc.textContent = 'Đèn Xanh cho xe — Xe lưu thông thông suốt và tách làn vào Khu vực đón học sinh.';
+
+                pedFlow.classList.add('hidden');
+                vehStopped.classList.add('hidden');
+                vehMoving.classList.remove('hidden');
+            }
+        }
+
+        // 3. Chọn Phân Khu trên Sa bàn SVG để xem thông số Inspector (Nâng cấp #1)
+        function selectZone(zoneId) {
+            currentZone = zoneId;
+            const data = zoneData[zoneId];
+
+            document.getElementById('inspector-badge').textContent = data.badge;
+            document.getElementById('inspector-title').textContent = data.title;
+            document.getElementById('inspector-role').textContent = data.role;
+            document.getElementById('inspector-material').textContent = data.material;
+            document.getElementById('inspector-before').textContent = data.before;
+            document.getElementById('inspector-after').textContent = data.after;
+
+            for (let i = 1; i <= 6; i++) {
+                const svgEl = document.getElementById('svg-zone-' + i);
+                const btnEl = document.getElementById('zone-btn-' + i);
+
+                if (svgEl) {
+                    if (i === zoneId) {
+                        svgEl.classList.add('selected-zone');
+                    } else {
+                        svgEl.classList.remove('selected-zone');
+                    }
+                }
+
+                if (btnEl) {
+                    if (i === zoneId) {
+                        btnEl.className = 'px-2.5 py-2 box-ink bg-ink text-paper font-mono text-[11px] font-bold uppercase text-left transition-colors';
+                    } else {
+                        btnEl.className = 'px-2.5 py-2 box-ink bg-paperLight text-ink font-mono text-[11px] font-bold uppercase text-left hover:bg-paperDark transition-colors';
+                    }
+                }
+            }
+        }
+
+        // 4. Đóng/Mở Quy trình 6 Bước (Mục 03)
+        let allExpanded = false;
+
+        function toggleStep(stepNumber) {
+            const detailEl = document.getElementById('step-detail-' + stepNumber);
+            const iconEl = document.getElementById('step-icon-' + stepNumber);
+
+            if (detailEl.classList.contains('hidden')) {
+                detailEl.classList.remove('hidden');
+                iconEl.textContent = '[–]';
+            } else {
+                detailEl.classList.add('hidden');
+                iconEl.textContent = '[+]';
+            }
+        }
+
+        function toggleAllSteps() {
+            allExpanded = !allExpanded;
+            const btn = document.getElementById('toggle-all-btn');
+
+            for (let i = 1; i <= 6; i++) {
+                const detailEl = document.getElementById('step-detail-' + i);
+                const iconEl = document.getElementById('step-icon-' + i);
+                if (allExpanded) {
+                    detailEl.classList.remove('hidden');
+                    iconEl.textContent = '[–]';
+                } else {
+                    detailEl.classList.add('hidden');
+                    iconEl.textContent = '[+]';
+                }
+            }
+
+            btn.textContent = allExpanded ? 'THU GỌN TẤT CẢ [–]' : 'MỞ RỘNG TẤT CẢ [+]';
+        }
+
+        // 5. Hệ thống Tab Quy Tắc An Toàn Phân Vai (Nâng cấp #3 - Mục 04)
+        const safetyRulesData = {
+            student: [
+                { id: 's1', code: 'QUY TẮC HỌC SINH #01', title: 'Đi bộ trên vỉa hè & qua đường đúng vạch sơn trắng', desc: 'Tuyệt đối không chạy nhảy hoặc băng cắt chéo qua lòng đường; chỉ sang đường tại khu vực có vạch kẻ Zebra.', committed: true },
+                { id: 's2', code: 'QUY TẮC HỌC SINH #02', title: 'Tuân thủ tín hiệu đèn giao thông trước cổng trường', desc: 'Quan sát kỹ đèn tín hiệu LED và chỉ qua đường khi các phương tiện đã dừng lại sau vạch dừng.', committed: true },
+                { id: 's3', code: 'QUY TẮC HỌC SINH #03', title: 'Đứng chờ phụ huynh đúng Khu vực đón học sinh', desc: 'Di chuyển theo hành lang vỉa hè đến đúng phân khu đón trả quy định, không đứng tràn dưới lòng đường.', committed: true },
+                { id: 's4', code: 'QUY TẮC HỌC SINH #04', title: 'Không tụ tập hàng quán, đùa giỡn trước cổng chính', desc: 'Giữ thông thoáng lối ra vào cổng trường ngay sau khi tan học để tránh gây ùn ứ cục bộ.', committed: true },
+                { id: 's5', code: 'QUY TẮC HỌC SINH #05', title: 'Đội mũ bảo hiểm & dắt xe gọn vào Khu vực để xe', desc: 'Cài quai mũ bảo hiểm đúng quy cách khi ngồi trên xe và đưa xe đạp/xe điện vào đúng cổng phụ nhà xe.', committed: true }
+            ],
+            parent: [
+                { id: 'p1', code: 'QUY TẮC PHỤ HUYNH #01', title: 'Dừng đỗ xe đúng trong Khu vực đón học sinh', desc: 'Cho xe rẽ vào vịnh đỗ xe dành riêng cho phụ huynh, tuyệt đối không dừng xe ngay giữa cổng trường.', committed: true },
+                { id: 'p2', code: 'QUY TẮC PHỤ HUYNH #02', title: 'Xếp hàng trật tự theo luồng một chiều', desc: 'Đỗ xe gọn gàng theo ô kẻ, không quay đầu xe đột ngột gây xung đột giao thông giờ cao điểm.', committed: true },
+                { id: 'p3', code: 'QUY TẮC PHỤ HUYNH #03', title: 'Giảm tốc độ khi vào khu vực có biển báo trường học', desc: 'Chủ động đi chậm dưới 20km/h và chú ý quan sát khi thấy biển cảnh báo trẻ em qua đường.', committed: true },
+                { id: 'p4', code: 'QUY TẮC PHỤ HUYNH #04', title: 'Dừng trước vạch sơn trắng nhường học sinh qua đường', desc: 'Khi đèn đỏ bật sáng hoặc có học sinh đang đi trên vạch Zebra, phụ huynh dừng xe hoàn toàn trước vạch Stop.', committed: true },
+                { id: 'p5', code: 'QUY TẮC PHỤ HUYNH #05', title: 'Nhanh chóng rời vịnh đón sau khi đã đón con', desc: 'Thực hiện quy tắc dừng đón nhanh để nhường vị trí ô đỗ cho các phụ huynh tiếp theo.', committed: true }
+            ],
+            school: [
+                { id: 'c1', code: 'ĐIỀU TIẾT CHUNG #01', title: 'Vận hành đèn tín hiệu LED theo khung giờ cao điểm', desc: 'Bật hệ thống đèn tín hiệu điều tiết luồng xe và luồng đi bộ vào giờ đến trường và giờ tan học.', committed: true },
+                { id: 'c2', code: 'ĐIỀU TIẾT CHUNG #02', title: 'Tách biệt cổng đi bộ và lối vào Khu vực để xe', desc: 'Phân luồng học sinh đi bộ qua cổng chính và học sinh đi xe đạp vào khu vực nhà xe nội khu.', committed: true },
+                { id: 'c3', code: 'ĐIỀU TIẾT CHUNG #03', title: 'Bố trí Đội tự quản hướng dẫn tại vạch qua đường', desc: 'Hỗ trợ nhắc nhở học sinh đi đúng vạch kẻ đường và hướng dẫn phụ huynh di chuyển vào vịnh đón.', committed: true },
+                { id: 'c4', code: 'ĐIỀU TIẾT CHUNG #04', title: 'Duy trì rõ nét hệ thống vạch kẻ và biển báo', desc: 'Kiểm tra định kỳ độ sáng của đèn LED, biển báo giao thông và vạch sơn phân làn tại cổng trường.', committed: true }
+            ]
+        };
+
+        let activeRuleTab = 'student';
+
+        function switchRuleTab(tabKey) {
+            activeRuleTab = tabKey;
+
+            const tabs = ['student', 'parent', 'school'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab-btn-' + t);
+                if (t === tabKey) {
+                    btn.className = 'px-4 py-3 box-ink bg-ink text-paper font-mono text-xs font-bold uppercase text-left flex items-center justify-between';
+                } else {
+                    btn.className = 'px-4 py-3 box-ink bg-paper text-ink font-mono text-xs font-bold uppercase text-left flex items-center justify-between hover:bg-paperLight';
+                }
+            });
+
+            renderRulesGrid();
+        }
+
+        function toggleRuleCommit(tabKey, index) {
+            safetyRulesData[tabKey][index].committed = !safetyRulesData[tabKey][index].committed;
+            renderRulesGrid();
+        }
+
+        function renderRulesGrid() {
+            const container = document.getElementById('rules-grid-container');
+            const list = safetyRulesData[activeRuleTab];
+
+            container.innerHTML = list.map((rule, idx) => `
+                <div onclick="toggleRuleCommit('${activeRuleTab}', ${idx})" class="p-5 box-ink ${rule.committed ? 'bg-paperLight' : 'bg-paperDark/50'} hover:bg-paperDark/40 transition-colors cursor-pointer flex flex-col justify-between gap-4">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="font-mono text-[11px] font-bold uppercase text-ink/60">${rule.code}</span>
+                            <span class="px-2 py-0.5 box-ink font-mono text-[10px] font-bold uppercase ${rule.committed ? 'bg-sigGreen text-paper' : 'bg-paper text-sigOrange'}">
+                                ${rule.committed ? '[ ✓ ĐÃ NẮM RÕ ]' : '[ CHƯA CHỌN ]'}
+                            </span>
+                        </div>
+                        <h3 class="text-base font-bold text-ink">${rule.title}</h3>
+                        <p class="text-xs sm:text-sm text-ink/75 mt-1.5 leading-relaxed">${rule.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Cập nhật tổng số quy tắc đã cam kết
+            const allRules = [...safetyRulesData.student, ...safetyRulesData.parent, ...safetyRulesData.school];
+            const committedCount = allRules.filter(r => r.committed).length;
+            document.getElementById('rules-commit-counter').textContent = `ĐÃ CAM KẾT THỰC HIỆN: ${committedCount < 10 ? '0' + committedCount : committedCount} / ${allRules.length} QUY TẮC`;
+        }
+
+        // 6. Checklist Nghiệm Thu Mô Hình Tương Tác (Mục 05)
+        const criteriaState = [true, true, true, true];
+
+        function toggleCriteria(index) {
+            criteriaState[index] = !criteriaState[index];
+            renderChecklist();
+        }
+
+        function renderChecklist() {
+            let completedCount = 0;
+
+            for (let i = 0; i < criteriaState.length; i++) {
+                const box = document.getElementById('check-box-' + i);
+                const status = document.getElementById('check-status-' + i);
+
+                if (criteriaState[i]) {
+                    completedCount++;
+                    box.textContent = '[X]';
+                    box.className = 'w-8 h-8 box-ink bg-sigGreen text-paper font-mono font-bold text-base flex items-center justify-center shrink-0 mt-0.5 select-none';
+                    status.textContent = 'ĐÃ HOÀN THÀNH';
+                    status.className = 'font-mono text-xs font-bold text-sigGreen';
+                } else {
+                    box.textContent = '[ ]';
+                    box.className = 'w-8 h-8 box-ink bg-paper text-ink font-mono font-bold text-base flex items-center justify-center shrink-0 mt-0.5 select-none';
+                    status.textContent = 'CHỜ KIỂM TRA';
+                    status.className = 'font-mono text-xs font-bold text-sigOrange';
+                }
+            }
+
+            const percent = completedCount * 25;
+            const counterEl = document.getElementById('checklist-counter');
+            const progressBarEl = document.getElementById('checklist-progress-bar');
+            const badgeEl = document.getElementById('final-stamp-badge');
+            const descEl = document.getElementById('final-stamp-desc');
+
+            counterEl.textContent = `ĐẠT: 0${completedCount} / 04 TIÊU CHUẨN (${percent}%)`;
+            progressBarEl.style.width = `${percent}%`;
+
+            if (completedCount === 4) {
+                counterEl.className = 'font-bold text-sigGreen';
+                progressBarEl.className = 'h-full bg-sigGreen transition-all duration-300';
+                badgeEl.textContent = '[ ĐẠT CHUẨN HOÀN THÀNH 100% ]';
+                badgeEl.className = 'px-4 py-2 box-ink bg-sigGreen text-paper font-mono text-xs font-bold uppercase tracking-widest text-center';
+                descEl.textContent = 'Đủ điều kiện trưng bày & thuyết trình cấp Trường THCS';
+            } else {
+                counterEl.className = 'font-bold text-sigOrange';
+                progressBarEl.className = 'h-full bg-sigOrange transition-all duration-300';
+                badgeEl.textContent = `[ ĐANG HOÀN THIỆN: ${percent}% ]`;
+                badgeEl.className = 'px-4 py-2 box-ink bg-sigYellow text-ink font-mono text-xs font-bold uppercase tracking-widest text-center';
+                descEl.textContent = `Cần bổ sung thêm ${4 - completedCount} hạng mục để hoàn tất mô hình`;
+            }
+        }
+
+        // Khởi chạy mặc định khi tải trang
+        window.addEventListener('DOMContentLoaded', () => {
+            renderRulesGrid();
+            selectZone(1);
+            setTrafficLight('red');
+        });
+    </script>
 </body>
 </html>
